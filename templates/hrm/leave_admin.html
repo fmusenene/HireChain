@@ -1,0 +1,443 @@
+{% extends 'hrm/base.html' %}
+
+{% block title %}Leave Management{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    {% include 'hrm/messages.html' %}
+    
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Leaves</h2>
+        <div>
+            <button class="btn btn-primary add-leave-btn" data-bs-toggle="modal" data-bs-target="#addLeaveModal">
+                <i class="fas fa-plus"></i> Add Leave
+            </button>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <!-- Total Present Card -->
+        <div class="col-md-3">
+            <div class="card bg-success bg-opacity-10 border-0 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-success bg-opacity-25 p-3 me-3">
+                            <i class="fas fa-users text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-muted">Total Present</h6>
+                            <h4 class="card-title mb-0">180/200</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Planned Leaves Card -->
+        <div class="col-md-3">
+            <div class="card bg-danger bg-opacity-10 border-0 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-danger bg-opacity-25 p-3 me-3">
+                            <i class="fas fa-calendar-check text-danger"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-muted">Planned Leaves</h6>
+                            <h4 class="card-title mb-0">10</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Unplanned Leaves Card -->
+        <div class="col-md-3">
+            <div class="card bg-warning bg-opacity-10 border-0 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-warning bg-opacity-25 p-3 me-3">
+                            <i class="fas fa-calendar-times text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-muted">Unplanned Leaves</h6>
+                            <h4 class="card-title mb-0">10</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Requests Card -->
+        <div class="col-md-3">
+            <div class="card bg-info bg-opacity-10 border-0 rounded-4">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="rounded-circle bg-info bg-opacity-25 p-3 me-3">
+                            <i class="fas fa-clock text-info"></i>
+                        </div>
+                        <div>
+                            <h6 class="card-subtitle mb-1 text-muted">Pending Requests</h6>
+                            <h4 class="card-title mb-0">15</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave List Section -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Leave List</h5>
+                <div class="d-flex gap-2">
+                    <!-- Date Range Picker -->
+                    <input type="date" class="form-control" value="2025-03-25">
+                    <span class="align-self-center">-</span>
+                    <input type="date" class="form-control" value="2025-03-31">
+                    
+                    <!-- Leave Type Filter -->
+                    <select class="form-select">
+                        <option>Leave Type</option>
+                        {% for leave_type in leave_types %}
+                            <option value="{{ leave_type.id }}">{{ leave_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                    
+                    <!-- Sort By Filter -->
+                    <select class="form-select">
+                        <option>Sort By: Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table Controls -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Row Per Page:</span>
+                    <select class="form-select form-select-sm" style="width: auto;">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                    </select>
+                </div>
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="Search...">
+                </div>
+            </div>
+
+            <!-- Leave Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input">
+                            </th>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>No of Days</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leaves %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input">
+                            </td>
+                            <td>{{ leave.employee.name }}</td>
+                            <td>{{ leave.leave_type.name }}</td>
+                            <td>{{ leave.from_date }}</td>
+                            <td>{{ leave.to_date }}</td>
+                            <td>{{ leave.no_of_days }}</td>
+                            <td>
+                                <span class="badge {% if leave.status == 'pending' %}bg-warning{% elif leave.status == 'approved' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ leave.status|title }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-sm btn-light" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-ellipsis-v"></i>
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit</a></li>
+                                        <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>Delete</a></li>
+                                    </ul>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No leaves found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Leave Modal -->
+    <div class="modal fade" id="addLeaveModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Leave</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" id="leaveForm">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Employee Name</label>
+                            <select name="employee" class="form-select" required>
+                                <option value="">Select Employee</option>
+                                {% for employee in employees %}
+                                    <option value="{{ employee.id }}">{{ employee }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Leave Type</label>
+                            <select name="leave_type" class="form-select" required onchange="calculateDays()">
+                                <option value="">Select Leave Type</option>
+                                {% for leave_type in leave_types %}
+                                    <option value="{{ leave_type.id }}" data-default-days="{{ leave_type.default_days }}">{{ leave_type.name }} ({{ leave_type.default_days }} days)</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">From</label>
+                                <input type="date" name="from_date" class="form-control" required onchange="calculateDays()">
+                            </div>
+                            <div class="col">
+                                <label class="form-label">To</label>
+                                <input type="date" name="to_date" class="form-control" required onchange="calculateDays()">
+                            </div>
+                        </div>
+
+                        <div class="row mb-3">
+                            <div class="col">
+                                <label class="form-label">No of Days</label>
+                                <input type="number" name="no_of_days" class="form-control" readonly>
+                            </div>
+                            <div class="col">
+                                <label class="form-label">Remaining Days</label>
+                                <input type="number" name="remaining_days" class="form-control" readonly>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Reason</label>
+                            <textarea name="reason" class="form-control" rows="3" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.search-box {
+    max-width: 300px;
+}
+.dropdown-item i {
+    width: 16px;
+}
+</style>
+
+<script>
+function calculateDays() {
+    const fromDate = new Date(document.querySelector('input[name="from_date"]').value);
+    const toDate = new Date(document.querySelector('input[name="to_date"]').value);
+    const noOfDaysInput = document.querySelector('input[name="no_of_days"]');
+    const remainingDaysInput = document.querySelector('input[name="remaining_days"]');
+    const leaveTypeSelect = document.querySelector('select[name="leave_type"]');
+
+    // Reset values if no leave type is selected
+    if (!leaveTypeSelect.value) {
+        noOfDaysInput.value = '';
+        remainingDaysInput.value = '';
+        return;
+    }
+
+    if (fromDate && toDate && fromDate <= toDate) {
+        const timeDiff = toDate - fromDate;
+        const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+        noOfDaysInput.value = daysDiff;
+
+        const selectedOption = leaveTypeSelect.options[leaveTypeSelect.selectedIndex];
+        const defaultDays = parseInt(selectedOption.dataset.defaultDays);
+        
+        // Calculate days from today to the from date
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // Reset time to start of day
+        const daysUntilLeave = Math.ceil((fromDate - today) / (1000 * 60 * 60 * 24));
+        
+        // Calculate remaining days based on days until leave
+        const remainingDays = daysUntilLeave >= 0 ? daysUntilLeave : 0;
+        remainingDaysInput.value = remainingDays;
+        
+        if (remainingDays === 0) {
+            remainingDaysInput.style.color = 'red';
+            remainingDaysInput.style.fontWeight = 'bold';
+        } else {
+            remainingDaysInput.style.color = 'inherit';
+            remainingDaysInput.style.fontWeight = 'normal';
+        }
+    } else {
+        noOfDaysInput.value = '';
+        remainingDaysInput.value = '';
+    }
+}
+
+// Add event listeners for all required fields
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('#leaveForm');
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    // Set minimum date for from_date to today
+    const fromDateInput = document.querySelector('input[name="from_date"]');
+    const today = new Date().toISOString().split('T')[0];
+    fromDateInput.min = today;
+    
+    requiredFields.forEach(field => {
+        field.addEventListener('change', function() {
+            if (this.name === 'leave_type' || this.name === 'from_date' || this.name === 'to_date') {
+                calculateDays();
+            }
+        });
+    });
+
+    // Form submission validation
+    form.addEventListener('submit', function(e) {
+        const leaveType = document.querySelector('select[name="leave_type"]');
+        const fromDate = document.querySelector('input[name="from_date"]');
+        const toDate = document.querySelector('input[name="to_date"]');
+        const reason = document.querySelector('textarea[name="reason"]');
+        
+        let isValid = true;
+        let errorMessage = '';
+
+        // Validate leave type
+        if (!leaveType.value) {
+            errorMessage += 'Please select a leave type.\n';
+            leaveType.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            leaveType.classList.remove('is-invalid');
+        }
+
+        // Validate dates
+        if (!fromDate.value) {
+            errorMessage += 'Please select a start date.\n';
+            fromDate.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            fromDate.classList.remove('is-invalid');
+        }
+
+        if (!toDate.value) {
+            errorMessage += 'Please select an end date.\n';
+            toDate.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            toDate.classList.remove('is-invalid');
+        }
+
+        // Validate date range
+        if (fromDate.value && toDate.value) {
+            const from = new Date(fromDate.value);
+            const to = new Date(toDate.value);
+            if (from > to) {
+                errorMessage += 'End date cannot be earlier than start date.\n';
+                toDate.classList.add('is-invalid');
+                isValid = false;
+            } else {
+                toDate.classList.remove('is-invalid');
+            }
+        }
+
+        // Validate reason
+        if (!reason.value.trim()) {
+            errorMessage += 'Please enter a reason.\n';
+            reason.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            reason.classList.remove('is-invalid');
+        }
+
+        if (!isValid) {
+            e.preventDefault();
+            alert(errorMessage);
+            return false;
+        }
+
+        // Log form data before submission
+        const formData = {
+            employee: document.querySelector('select[name="employee"]').value,
+            leave_type: leaveType.value,
+            from_date: fromDate.value,
+            to_date: toDate.value,
+            no_of_days: document.querySelector('input[name="no_of_days"]').value,
+            remaining_days: document.querySelector('input[name="remaining_days"]').value,
+            reason: reason.value
+        };
+        console.log('Form Data:', formData);
+
+        // Show loading state
+        const submitButton = form.querySelector('button[type="submit"]');
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Submitting...';
+
+        return true;
+    });
+});
+
+document.querySelector('input[name="from_date"]').addEventListener('change', function() {
+    const fromDate = new Date(this.value);
+    const toDateInput = document.querySelector('input[name="to_date"]');
+    const toDate = new Date(toDateInput.value);
+    
+    if (toDateInput.value && toDate < fromDate) {
+        alert('The "To" date cannot be earlier than the "From" date.');
+        toDateInput.value = '';
+    }
+    toDateInput.min = this.value;
+    calculateDays();
+});
+
+document.querySelector('input[name="to_date"]').addEventListener('change', function() {
+    const fromDate = new Date(document.querySelector('input[name="from_date"]').value);
+    const toDate = new Date(this.value);
+    
+    if (toDate < fromDate) {
+        alert('The "To" date cannot be earlier than the "From" date.');
+        this.value = '';
+    }
+    calculateDays();
+});
+</script>
+{% endblock %}

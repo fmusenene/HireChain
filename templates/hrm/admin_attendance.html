@@ -1,0 +1,676 @@
+{% extends 'hrm/base.html' %}
+{% load hrm_filters %}
+
+{% block title %}Attendance Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex align-items-center mb-4">
+        <div>
+            <i class="fas fa-home text-muted"></i>
+            <span class="mx-2 text-muted">/</span>
+            <span class="text-muted">Employee</span>
+            <span class="mx-2 text-muted">/</span>
+            <span>Attendance Admin</span>
+        </div>
+        <div class="ms-auto">
+            <button class="btn btn-outline-secondary me-2">
+                <i class="fas fa-clock"></i>
+            </button>
+            <button class="btn btn-outline-secondary me-2">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+            <button class="btn btn-primary" id="reportButton" disabled>
+                <i class="fas fa-chart-bar"></i> Report
+            </button>
+        </div>
+    </div>
+
+    <!-- Attendance Details Today -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h5 class="mb-1">Attendance Details Today</h5>
+                    <p class="text-muted mb-0">Data from the 800+ total no of employees</p>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Total Absenties today</span>
+                    <div class="avatar-group">
+                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32" height="32">
+                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32" height="32">
+                        <img src="https://via.placeholder.com/32" class="rounded-circle" width="32" height="32">
+                        <span class="avatar bg-primary rounded-circle">+1</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Present -->
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 border">
+                        <div>
+                            <h6 class="text-muted mb-1">Present</h6>
+                            <h3 class="mb-0">{{ present_count }}</h3>
+                        </div>
+                        <span class="badge bg-success">+1%</span>
+                    </div>
+                </div>
+
+                <!-- Late Login -->
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 border">
+                        <div>
+                            <h6 class="text-muted mb-1">Late Login</h6>
+                            <h3 class="mb-0">{{ late_count }}</h3>
+                        </div>
+                        <span class="badge bg-danger">-1%</span>
+                    </div>
+                </div>
+
+                <!-- Uninformed -->
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 border">
+                        <div>
+                            <h6 class="text-muted mb-1">Uninformed</h6>
+                            <h3 class="mb-0">{{ uninformed_count }}</h3>
+                        </div>
+                        <span class="badge bg-danger">-12%</span>
+                    </div>
+                </div>
+
+                <!-- Permission -->
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 border">
+                        <div>
+                            <h6 class="text-muted mb-1">Permission</h6>
+                            <h3 class="mb-0">{{ permission_count }}</h3>
+                        </div>
+                        <span class="badge bg-success">+1%</span>
+                    </div>
+                </div>
+
+                <!-- Absent -->
+                <div class="col">
+                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 border">
+                        <div>
+                            <h6 class="text-muted mb-1">Absent</h6>
+                            <h3 class="mb-0">{{ absent_count }}</h3>
+                        </div>
+                        <span class="badge bg-danger">-19%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Attendance Section -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="mb-4">Admin Attendance</h5>
+
+            <!-- Filters -->
+            <div class="d-flex flex-wrap gap-3 mb-4">
+                <input type="text" class="form-control" value="03/25/2025 - 03/31/2025" style="width: 200px;">
+                
+                <select class="form-select" style="width: 200px;">
+                    <option>Department</option>
+                    <option>IT</option>
+                    <option>HR</option>
+                    <option>Finance</option>
+                </select>
+
+                <select class="form-select" style="width: 200px;">
+                    <option>Select Status</option>
+                    <option>Present</option>
+                    <option>Late</option>
+                    <option>Absent</option>
+                </select>
+
+                <select class="form-select" style="width: 200px;">
+                    <option>Sort By : Last 7 Days</option>
+                    <option>Last 30 Days</option>
+                    <option>This Month</option>
+                </select>
+            </div>
+
+            <!-- Table Controls -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Row Per Page</span>
+                    <select class="form-select form-select-sm" style="width: 70px;">
+                        <option>10</option>
+                        <option>25</option>
+                        <option>50</option>
+                    </select>
+                    <span class="ms-3">Entries</span>
+                </div>
+                <div class="search-box">
+                    <input type="text" class="form-control" placeholder="Search...">
+                </div>
+            </div>
+
+            <!-- Attendance Table -->
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" class="form-check-input select-all-checkbox">
+                            </th>
+                            <th>Employee <i class="fas fa-sort ms-1"></i></th>
+                            <th>Status <i class="fas fa-sort ms-1"></i></th>
+                            <th>Check In <i class="fas fa-sort ms-1"></i></th>
+                            <th>Check Out <i class="fas fa-sort ms-1"></i></th>
+                            <th>Break <i class="fas fa-sort ms-1"></i></th>
+                            <th>Late <i class="fas fa-sort ms-1"></i></th>
+                            <th>Production Hours <i class="fas fa-sort ms-1"></i></th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input table-checkbox">
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if employee.profile_image %}
+                                    <img src="{{ employee.profile_image.url }}" class="rounded-circle me-2" width="32" height="32">
+                                    {% else %}
+                                    <img src="https://via.placeholder.com/32" class="rounded-circle me-2" width="32" height="32">
+                                    {% endif %}
+                                    <div>
+                                        <div class="fw-bold">{{ employee.user.get_full_name }}</div>
+                                        <small class="text-muted">{{ employee.department.name|default:"No Department" }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            {% with attendances=employee.attendances.all %}
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        <span class="badge {% if attendance.status == 'present' %}bg-success{% elif attendance.status == 'late' %}bg-warning{% else %}bg-danger{% endif %}">
+                                            {{ attendance.get_status_display }}
+                                        </span>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        {{ attendance.check_in|default:"-" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        {{ attendance.check_out|default:"-" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        {{ attendance.break_time|default:"0h 0m" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        {{ attendance.late_minutes|default:"0" }} min
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        {{ attendance.production_hours|default:"0h 0m" }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>
+                                {% for attendance in attendances %}
+                                    {% if attendance.employee.id == employee.id %}
+                                        <button type="button" class="btn btn-primary btn-sm edit-attendance" 
+                                            data-attendance-id="{{ attendance.id }}"
+                                            data-attendance-date="{{ attendance.attendance_date|date:'Y-m-d' }}"
+                                            data-check-in="{{ attendance.check_in|time:'H:i' }}"
+                                            data-check-out="{{ attendance.check_out|time:'H:i' }}"
+                                            data-break-time="{{ attendance.break_time }}"
+                                            data-late-minutes="{{ attendance.late_minutes }}"
+                                            data-production-hours="{{ attendance.production_hours|time:'H:i' }}"
+                                            data-status="{{ attendance.status }}">
+                                            Edit
+                                        </button>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% endwith %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Attendance Report Modal -->
+<div class="modal fade" id="attendanceReportModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title">Attendance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Employee Info -->
+                <div class="d-flex align-items-center mb-4">
+                    <img src="https://via.placeholder.com/48" class="rounded-circle me-3" width="48" height="48">
+                    <div>
+                        <h6 class="mb-1">Anthony Lewis</h6>
+                        <span class="text-muted">UI/UX Team</span>
+                    </div>
+                </div>
+
+                <!-- Attendance Details -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <small class="text-muted">Date</small>
+                            <div>15 Apr 2025</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <small class="text-muted">Punch in at</small>
+                            <div>09:00 AM</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <small class="text-muted">Punch out at</small>
+                            <div>06:45 PM</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="mb-2">
+                            <small class="text-muted">Status</small>
+                            <div>Present</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Time Statistics -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <small class="text-muted d-block mb-2">Total Working hours</small>
+                        <h5 class="mb-0">12h 36m</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block mb-2">Productive Hours</small>
+                        <h5 class="mb-0">08h 36m</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block mb-2">Break hours</small>
+                        <h5 class="mb-0">22m 15s</h5>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted d-block mb-2">Overtime</small>
+                        <h5 class="mb-0">02h 15m</h5>
+                    </div>
+                </div>
+
+                <!-- Timeline -->
+                <div class="timeline-container mb-3">
+                    <div class="timeline">
+                        <div class="productive-time" style="left: 12.5%; width: 25%;"></div>
+                        <div class="break-time" style="left: 37.5%; width: 4%;"></div>
+                        <div class="productive-time" style="left: 41.5%; width: 35%;"></div>
+                        <div class="break-time" style="left: 76.5%; width: 4%;"></div>
+                        <div class="overtime" style="left: 80.5%; width: 15%;"></div>
+                    </div>
+                    <div class="timeline-labels">
+                        <span>06:00</span>
+                        <span>07:00</span>
+                        <span>08:00</span>
+                        <span>09:00</span>
+                        <span>10:00</span>
+                        <span>11:00</span>
+                        <span>12:00</span>
+                        <span>01:00</span>
+                        <span>02:00</span>
+                        <span>03:00</span>
+                        <span>04:00</span>
+                        <span>05:00</span>
+                        <span>06:00</span>
+                        <span>07:00</span>
+                        <span>08:00</span>
+                        <span>09:00</span>
+                        <span>10:00</span>
+                        <span>11:00</span>
+                    </div>
+                </div>
+
+                <!-- Timeline Legend -->
+                <div class="d-flex gap-4">
+                    <div class="d-flex align-items-center">
+                        <span class="legend-dot productive"></span>
+                        <small>Total Working hours</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="legend-dot productive"></span>
+                        <small>Productive Hours</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="legend-dot break"></span>
+                        <small>Break hours</small>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="legend-dot overtime"></span>
+                        <small>Overtime</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Attendance Modal -->
+<div class="modal fade" id="editAttendanceModal" tabindex="-1" aria-labelledby="editAttendanceModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editAttendanceModalLabel">Edit Attendance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_attendance' %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <input type="hidden" name="attendance_id" id="edit_attendance_id">
+                    
+                    <div class="mb-3">
+                        <label for="edit_date" class="form-label">Date</label>
+                        <input type="date" class="form-control" id="edit_date" name="date" required>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="edit_check_in" class="form-label">Check In</label>
+                            <input type="time" class="form-control" id="edit_check_in" name="check_in" required>
+                        </div>
+                        <div class="col">
+                            <label for="edit_check_out" class="form-label">Check Out</label>
+                            <input type="time" class="form-control" id="edit_check_out" name="check_out" required>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col">
+                            <label for="edit_break" class="form-label">Break</label>
+                            <input type="text" class="form-control" id="edit_break" name="break" placeholder="30 Min" required>
+                        </div>
+                        <div class="col">
+                            <label for="edit_late" class="form-label">Late</label>
+                            <input type="text" class="form-control" id="edit_late" name="late" placeholder="32 Min" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_production_hours" class="form-label">Production Hours</label>
+                        <input type="time" class="form-control" id="edit_production_hours" name="production_hours" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="edit_status" class="form-label">Status</label>
+                        <select class="form-select" id="edit_status" name="status" required>
+                            {% for value, label in status_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom styles */
+.avatar-group {
+    display: flex;
+    align-items: center;
+}
+
+.avatar-group img {
+    margin-right: -10px;
+    border: 2px solid #fff;
+}
+
+.avatar {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 12px;
+    border: 2px solid #fff;
+}
+
+.badge {
+    padding: 6px 10px;
+    font-weight: 500;
+}
+
+.search-box {
+    width: 250px;
+}
+
+.table th {
+    font-weight: 500;
+    color: #6c757d;
+}
+
+.table th i {
+    font-size: 12px;
+    cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .row > div {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Timeline styles */
+.timeline-container {
+    padding: 20px 0;
+}
+
+.timeline {
+    height: 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.timeline > div {
+    position: absolute;
+    height: 100%;
+    top: 0;
+}
+
+.productive-time {
+    background: #00e676;
+    border-radius: 12px;
+}
+
+.break-time {
+    background: #ffd600;
+    border-radius: 12px;
+}
+
+.overtime {
+    background: #2196f3;
+    border-radius: 12px;
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.legend-dot.productive {
+    background: #00e676;
+}
+
+.legend-dot.break {
+    background: #ffd600;
+}
+
+.legend-dot.overtime {
+    background: #2196f3;
+}
+
+/* Modal styles */
+.modal-lg {
+    max-width: 800px;
+}
+
+.modal-body {
+    padding: 1.5rem;
+}
+
+.modal-header {
+    padding: 1rem 1.5rem;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.querySelector('thead input[type="checkbox"]');
+    const tableCheckboxes = document.querySelectorAll('.table-checkbox');
+    const reportButton = document.getElementById('reportButton');
+
+    selectAllCheckbox.addEventListener('change', function() {
+        tableCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+        updateReportButton();
+    });
+
+    tableCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const allChecked = Array.from(tableCheckboxes).every(cb => cb.checked);
+            selectAllCheckbox.checked = allChecked;
+            updateReportButton();
+        });
+    });
+
+    function updateReportButton() {
+        const checkedBoxes = document.querySelectorAll('.table-checkbox:checked');
+        reportButton.disabled = checkedBoxes.length !== 1;
+    }
+
+    // Add click handler to report button
+    reportButton.addEventListener('click', function() {
+        const checkedRow = document.querySelector('.table-checkbox:checked').closest('tr');
+        const cells = checkedRow.querySelectorAll('td');
+        
+        // Get data from cells
+        const employeeName = cells[1].querySelector('.fw-bold').textContent;
+        const department = cells[1].querySelector('.text-muted').textContent;
+        const status = cells[2].querySelector('.badge').textContent;
+        const checkIn = cells[3].textContent;
+        const checkOut = cells[4].textContent;
+        const breakTime = cells[5].textContent;
+        const lateMinutes = cells[6].textContent;
+        const productionHours = cells[7].textContent;
+
+        // Update modal content
+        const modal = document.getElementById('attendanceReportModal');
+        
+        // Update employee info
+        modal.querySelector('.modal-body h6').textContent = employeeName;
+        modal.querySelector('.modal-body .text-muted').textContent = department;
+        
+        // Update attendance details
+        const detailsRow = modal.querySelector('.modal-body .row:nth-child(2)');
+        detailsRow.querySelector('.col-md-3:nth-child(1) div:last-child').textContent = new Date().toLocaleDateString();
+        detailsRow.querySelector('.col-md-3:nth-child(2) div:last-child').textContent = checkIn || '-';
+        detailsRow.querySelector('.col-md-3:nth-child(3) div:last-child').textContent = checkOut || '-';
+        detailsRow.querySelector('.col-md-3:nth-child(4) div:last-child').textContent = status;
+
+        // Update time statistics
+        const statsRow = modal.querySelector('.modal-body .row:nth-child(3)');
+        statsRow.querySelector('.col-md-3:nth-child(1) h5').textContent = productionHours || '0h 0m';
+        statsRow.querySelector('.col-md-3:nth-child(2) h5').textContent = productionHours || '0h 0m';
+        statsRow.querySelector('.col-md-3:nth-child(3) h5').textContent = breakTime || '0m 0s';
+        statsRow.querySelector('.col-md-3:nth-child(4) h5').textContent = lateMinutes || '0m';
+
+        // Show the modal
+        const modalInstance = new bootstrap.Modal(modal);
+        modalInstance.show();
+    });
+});
+
+// Add JavaScript to handle edit button clicks
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to handle edit button clicks
+    function handleEditClick(attendanceId, date, checkIn, checkOut, breakTime, late, productionHours, status) {
+        // Set values in the modal form
+        document.getElementById('edit_attendance_id').value = attendanceId;
+        document.getElementById('edit_date').value = date;
+        document.getElementById('edit_check_in').value = checkIn;
+        document.getElementById('edit_check_out').value = checkOut;
+        document.getElementById('edit_break').value = breakTime;
+        document.getElementById('edit_late').value = late;
+        document.getElementById('edit_production_hours').value = productionHours;
+        document.getElementById('edit_status').value = status;
+        
+        // Show the modal
+        var modal = new bootstrap.Modal(document.getElementById('editAttendanceModal'));
+        modal.show();
+    }
+
+    // Add click event listeners to all edit buttons
+    document.querySelectorAll('.edit-attendance').forEach(button => {
+        button.addEventListener('click', function() {
+            const data = this.dataset;
+            handleEditClick(
+                data.attendanceId,
+                data.attendanceDate,
+                data.checkIn,
+                data.checkOut,
+                data.breakTime,
+                data.lateMinutes,
+                data.productionHours,
+                data.status
+            );
+        });
+    });
+});
+</script>
+{% endblock %}

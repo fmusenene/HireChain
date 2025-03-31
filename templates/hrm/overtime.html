@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% block title %}Overtime{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overtime Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+    <div class="container mt-5">
+        <h2>Overtime Records</h2>
+
+        <!-- Add Overtime Button -->
+        <button type="button" class="btn btn-primary mb-3" data-toggle="modal" data-target="#addOvertimeModal">
+            Add Overtime
+        </button>
+
+        <!-- Overtime Table -->
+        <table class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Date</th>
+                    <th>Overtime Hours</th>
+                    <th>Remaining Hours</th>
+                    <th>Project</th>
+                    <th>Approved By</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody id="overtimeTableBody">
+                {% for overtime in overtimes %}
+                <tr>
+                    <td>{{ overtime.employee.username }}</td>
+                    <td>{{ overtime.date }}</td>
+                    <td>{{ overtime.hours }}</td>
+                    <td>{{ overtime.remaining_hours|default:"N/A" }}</td>
+                    <td>{{ overtime.project.name|default:"N/A" }}</td>
+                    <td>Manager</td>
+                    <td>{{ overtime.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Modal for Adding Overtime -->
+        <div class="modal fade" id="addOvertimeModal" tabindex="-1" role="dialog" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Add Overtime</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span>&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <form id="overtimeForm">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="employee">Employee:</label>
+                                <select id="employee" name="employee" class="form-control">
+                                    <option value="">Select Employee</option>
+                                    {% for employee in employees %}
+                                    <option value="{{ employee.id }}">{{ employee.username }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="overtimeDate">Overtime Date:</label>
+                                <input type="date" id="overtimeDate" name="date" class="form-control" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="overtimeHours">Overtime Hours:</label>
+                                <input type="number" id="overtimeHours" name="hours" class="form-control" step="0.5" min="0" required> 
+                            </div>
+
+                            <div class="form-group">
+                                <label for="remainingHours">Remaining Hours:</label>
+                                <input type="number" id="remainingHours" name="remaining_hours" class="form-control" step="0.5" min="0" required> 
+                            </div>
+
+                            <div class="form-group">
+                                <label for="description">Description:</label>
+                                <textarea id="description" name="description" class="form-control" rows="3"></textarea>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Status">Status:</label>
+                                <select id="Status" name="status" class="form-control">
+                                    <option value="Pending">Pending</option>
+                                    <option value="Approved">Approved</option>
+                                    <option value="Rejected">Rejected</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">Save</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- jQuery, Popper.js, and Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- AJAX Script -->
+    <script>
+        $(document).ready(function () {
+            // Manually initialize the modal
+            $("#addOvertimeModal").modal({ show: false });
+
+            // Handle form submission with AJAX
+            $("#overtimeForm").submit(function (event) {
+                event.preventDefault(); // Prevent default form submission
+                
+                $.ajax({
+                    type: "POST",
+                    url: "{% url 'overtime' %}",  // Django URL for overtime submission
+                    data: $(this).serialize(),
+                    success: function (response) {
+                        $("#addOvertimeModal").modal("hide"); // Close modal
+                        $("#overtimeForm")[0].reset(); // Reset form
+
+                        // Append new record to the table
+                        let newRow = `<tr>
+                            <td>${response.employee}</td>
+                            <td>${response.date}</td>
+                            <td>${response.hours}</td>
+                            <td>${response.remaining_hours || 'N/A'}</td>
+                            <td>${response.project || 'N/A'}</td>
+                            <td>Manager</td>
+                            <td>${response.status}</td>
+                        </tr>`;
+                        
+                        $("#overtimeTableBody").prepend(newRow);
+                    },
+                    error: function (response) {
+                        alert("Error: " + JSON.stringify(response.responseJSON.error));
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+</html>
+
+{% endblock %}

@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Header Section -->
+<div class="container-fluid px-4">
+    <!-- Title and Breadcrumb -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2">Schedule Timing</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="{% url 'hrm' %}"><i class="fas fa-home"></i></a></li>
+                    <li class="breadcrumb-item">Administration</li>
+                    <li class="breadcrumb-item active">Schedule Timing</li>
+                </ol>
+            </nav>
+        </div>
+        <div class="d-flex gap-2">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown">
+                    <i class="fas fa-file-export"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="#">Export as CSV</a></li>
+                    <li><a class="dropdown-item" href="#">Export as PDF</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Card -->
+    <div class="card">
+        <div class="card-body">
+            <!-- Card Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h5 class="card-title mb-0">Schedule Timing List</h5>
+                <div class="d-flex gap-2">
+                    <input type="text" class="form-control" style="width: 200px;" value="{{ date_range }}" readonly>
+                    <select class="form-select" style="width: 200px;" name="sort_by" onchange="this.form.submit()">
+                        <option value="7" {% if sort_by == '7' %}selected{% endif %}>Sort By: Last 7 Days</option>
+                        <option value="30" {% if sort_by == '30' %}selected{% endif %}>Last 30 Days</option>
+                        <option value="90" {% if sort_by == '90' %}selected{% endif %}>Last 90 Days</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Table Controls -->
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <span>Row Per Page:</span>
+                    <select class="form-select form-select-sm" style="width: 70px;" name="entries" onchange="this.form.submit()">
+                        <option value="10" {% if entries_per_page == '10' %}selected{% endif %}>10</option>
+                        <option value="25" {% if entries_per_page == '25' %}selected{% endif %}>25</option>
+                        <option value="50" {% if entries_per_page == '50' %}selected{% endif %}>50</option>
+                    </select>
+                    <span>Entries</span>
+                    <span class="ms-2 text-muted">(Total: {{ total_entries }})</span>
+                </div>
+                <form method="get" class="search-box">
+                    <input type="hidden" name="entries" value="{{ entries_per_page }}">
+                    <input type="hidden" name="sort_by" value="{{ sort_by }}">
+                    <input type="hidden" name="page" value="1">
+                    <input type="text" 
+                           class="form-control" 
+                           name="search" 
+                           placeholder="Search employees..." 
+                           value="{{ search_query }}"
+                           autocomplete="off">
+                    <button type="submit" class="btn btn-link search-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Schedule Table -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th width="30">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll">
+                                </div>
+                            </th>
+                            <th>Name</th>
+                            <th>Job Title</th>
+                            <th>User Available Timings</th>
+                            <th width="150">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for employee in employees %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="selected_employees[]" value="{{ employee.id }}">
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if employee.profile_image %}
+                                        <img src="{{ employee.profile_image.url }}" alt="" class="rounded-circle" width="40">
+                                    {% else %}
+                                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                            <i class="fas fa-user text-secondary"></i>
+                                        </div>
+                                    {% endif %}
+                                    <div class="fw-medium">{{ employee.name }}</div>
+                                </div>
+                            </td>
+                            <td>{{ employee.job_title }}</td>
+                            <td>
+                                <div class="d-flex flex-column gap-1">
+                                    {% for timing in employee.available_timings %}
+                                    <div>{{ timing.date|date:"d-m-Y" }} - {{ timing.start_time|time:"H:i A" }}-{{ timing.end_time|time:"H:i A" }}</div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td>
+                                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#scheduleModal" style="white-space: nowrap; min-width: 130px;">Schedule&nbsp;Timing</button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            {% if employees.paginator.num_pages > 1 %}
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <div class="text-muted">
+                    Showing {{ employees.start_index }} to {{ employees.end_index }} of {{ total_entries }} entries
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination mb-0">
+                        {% if employees.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ employees.previous_page_number }}&entries={{ entries_per_page }}&sort_by={{ sort_by }}&search={{ search_query }}" aria-label="Previous">
+                                <span aria-hidden="true">&laquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for page_num in page_range %}
+                        <li class="page-item {% if page_num == employees.number %}active{% endif %}">
+                            <a class="page-link" href="?page={{ page_num }}&entries={{ entries_per_page }}&sort_by={{ sort_by }}&search={{ search_query }}">
+                                {{ page_num }}
+                            </a>
+                        </li>
+                        {% endfor %}
+                        
+                        {% if employees.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ employees.next_page_number }}&entries={{ entries_per_page }}&sort_by={{ sort_by }}&search={{ search_query }}" aria-label="Next">
+                                <span aria-hidden="true">&raquo;</span>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-labelledby="scheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0">
+                <h5 class="modal-title" id="scheduleModalLabel">Add Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm" method="post" action="{% url 'add_schedule' %}">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <!-- Department -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="department">Department <span class="text-danger">*</span></label>
+                            <select class="form-select" id="department" name="department" required>
+                                <option value="">Select</option>
+                                {% for dept in departments %}
+                                <option value="{{ dept.id }}">{{ dept.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Employee Name -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="employee">Employee Name <span class="text-danger">*</span></label>
+                            <select class="form-select" id="employee" name="employee" required>
+                                <option value="">Select</option>
+                                {% for emp in employees %}
+                                <option value="{{ emp.id }}">{{ emp.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Date -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="schedule_date">Date <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" id="schedule_date" name="date" required>
+                        </div>
+
+                        <!-- Shifts -->
+                        <div class="col-md-6">
+                            <label class="form-label" for="shift">Shifts <span class="text-danger">*</span></label>
+                            <select class="form-select" id="shift" name="shift" required>
+                                <option value="">Select</option>
+                                <option value="morning">Morning Shift</option>
+                                <option value="day">Day Shift</option>
+                                <option value="evening">Evening Shift</option>
+                            </select>
+                        </div>
+
+                        <!-- Time inputs with names and IDs -->
+                        <div class="col-md-4">
+                            <label class="form-label" for="min_start_time">Min Start Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="min_start_time" name="min_start_time" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="start_time">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="start_time" name="start_time" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="max_start_time">Max Start Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="max_start_time" name="max_start_time" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="min_end_time">Min End Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="min_end_time" name="min_end_time" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="end_time">End Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="end_time" name="end_time" required>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label class="form-label" for="max_end_time">Max End Time <span class="text-danger">*</span></label>
+                            <input type="time" class="form-control" id="max_end_time" name="max_end_time" required>
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label" for="break_time">Break Time <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="break_time" name="break_time" placeholder="30 Min" required>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="accept_extra_hours" name="accept_extra_hours">
+                                <label class="form-check-label" for="accept_extra_hours">Accept Extra Hours</label>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="publish" name="publish">
+                                <label class="form-check-label" for="publish">Publish</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="submit" form="scheduleForm" class="btn btn-primary px-4">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_css %}
+<style>
+    .search-box {
+        position: relative;
+        width: 250px;
+        margin: 0;
+    }
+    .search-box input {
+        padding-right: 40px;
+    }
+    .search-box .search-btn {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        padding: 0.375rem 0.75rem;
+        color: #6c757d;
+        background: none;
+        border: none;
+    }
+    .search-box .search-btn:hover {
+        color: #000;
+    }
+    .table th {
+        font-weight: 600;
+        background-color: #f8f9fa;
+    }
+    .form-check-input {
+        cursor: pointer;
+    }
+    .modal-content {
+        border-radius: 8px;
+        border: none;
+    }
+    .modal-header {
+        padding: 1.5rem 1.5rem 1rem;
+    }
+    .modal-body {
+        padding: 1rem 1.5rem;
+    }
+    .modal-footer {
+        padding: 1rem 1.5rem 1.5rem;
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+    .form-control, .form-select {
+        border-radius: 4px;
+        padding: 0.5rem 0.75rem;
+    }
+    .form-check-input {
+        cursor: pointer;
+    }
+    .form-switch .form-check-input {
+        width: 2.5em;
+        height: 1.25em;
+        margin-right: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle select all checkbox
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const employeeCheckboxes = document.querySelectorAll('input[name="selected_employees[]"]');
+
+        selectAllCheckbox.addEventListener('change', function() {
+            employeeCheckboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+        });
+
+        // Update select all checkbox state based on individual selections
+        employeeCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const allChecked = Array.from(employeeCheckboxes).every(cb => cb.checked);
+                const someChecked = Array.from(employeeCheckboxes).some(cb => cb.checked);
+                
+                selectAllCheckbox.checked = allChecked;
+                selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            });
+        });
+    });
+
+    // Initialize form elements
+    const scheduleModal = document.getElementById('scheduleModal');
+    if (scheduleModal) {
+        scheduleModal.addEventListener('shown.bs.modal', function () {
+            // Focus on first input when modal opens
+            scheduleModal.querySelector('select, input').focus();
+        });
+    }
+
+    // Handle form submission
+    const scheduleForm = document.getElementById('scheduleForm');
+    if (scheduleForm) {
+        scheduleForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            // Add your form submission logic here
+            
+            // Close modal after submission
+            const modal = bootstrap.Modal.getInstance(scheduleModal);
+            modal.hide();
+        });
+    }
+</script>
+{% endblock %}
+
+{% endblock %}

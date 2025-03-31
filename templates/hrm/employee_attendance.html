@@ -1,0 +1,276 @@
+{% extends 'hrm/base.html' %}
+{% load hrm_filters %}
+
+{% block title %}Employee Attendance{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-4">
+    <!-- Breadcrumb -->
+    <div class="d-flex align-items-center mb-4">
+        <div>
+            <i class="fas fa-home text-muted"></i>
+            <span class="mx-2 text-muted">/</span>
+            <span class="text-muted">Employee</span>
+            <span class="mx-2 text-muted">/</span>
+            <span>Employee Attendance</span>
+        </div>
+    </div>
+
+    <!-- Employee Info Card -->
+    <div class="card border-0 shadow-sm mb-4">
+        <div class="card-body">
+            <div class="text-center mb-4">
+                <h5 class="mb-1">Good Morning, {{ employee.name }}</h5>
+                <p class="text-muted mb-0">{{ current_time|time:"H:i A" }}, {{ today|date:"d M Y" }}</p>
+            </div>
+
+            {% if employee.profile_image %}
+            <img src="{{ employee.profile_image.url }}" class="rounded-circle mx-auto d-block mb-3" width="100" height="100">
+            {% else %}
+            <img src="https://via.placeholder.com/100" class="rounded-circle mx-auto d-block mb-3" width="100" height="100">
+            {% endif %}
+
+            <div class="text-center mb-3">
+                <div class="badge bg-primary">Production: {{ total_hours_today|time:"H:i" }} hrs</div>
+                {% if today_attendance %}
+                    <div class="mt-2">
+                        <i class="fas fa-clock text-muted"></i>
+                        <span>Punch In at {{ today_attendance.check_in|time:"H:i A" }}</span>
+                    </div>
+                    {% if not today_attendance.check_out %}
+                    <button class="btn btn-dark mt-3">Punch Out</button>
+                    {% endif %}
+                {% else %}
+                    <button class="btn btn-primary mt-3">Punch In</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Total Hours Today -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-warning bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2">{{ total_hours_today|time:"H:i" }} / 9</h3>
+                    <p class="text-muted mb-0">Total Hours Today</p>
+                    <div class="mt-2">
+                        <span class="badge bg-success">+5% This Week</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Hours Week -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-dark bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-calendar-week text-dark"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2">{{ total_week_hours|time:"H:i" }} / 40</h3>
+                    <p class="text-muted mb-0">Total Hours Week</p>
+                    <div class="mt-2">
+                        <span class="badge bg-success">+7% Last Week</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Hours Month -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-primary bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-calendar-alt text-primary"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2">{{ total_month_hours|time:"H:i" }} / 98</h3>
+                    <p class="text-muted mb-0">Total Hours Month</p>
+                    <div class="mt-2">
+                        <span class="badge bg-danger">-8% Last Month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Overtime this Month -->
+        <div class="col-md-3">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-danger bg-opacity-10 p-2 rounded">
+                            <i class="fas fa-business-time text-danger"></i>
+                        </div>
+                    </div>
+                    <h3 class="mb-2">{{ total_overtime|time:"H:i" }} / 28</h3>
+                    <p class="text-muted mb-0">Overtime this Month</p>
+                    <div class="mt-2">
+                        <span class="badge bg-success">+6% Last Month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Time Distribution -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <h5 class="mb-4">Time Distribution</h5>
+
+            <!-- Time Stats -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <small class="text-muted d-block mb-2">Total Working hours</small>
+                    <h5 class="mb-0">{{ total_hours_today|time:"H:i" }}</h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block mb-2">Productive Hours</small>
+                    <h5 class="mb-0">{{ productive_hours|time:"H:i" }}</h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block mb-2">Break hours</small>
+                    <h5 class="mb-0">{{ break_hours|time:"H:i" }}</h5>
+                </div>
+                <div class="col-md-3">
+                    <small class="text-muted d-block mb-2">Overtime</small>
+                    <h5 class="mb-0">{{ overtime_hours|time:"H:i" }}</h5>
+                </div>
+            </div>
+
+            <!-- Timeline -->
+            <div class="timeline-container mb-3">
+                <div class="timeline">
+                    {% if today_attendance %}
+                        {% with prod_percent=productive_hours.total_seconds|percentage:total_hours_today.total_seconds %}
+                        {% with break_percent=break_hours.total_seconds|percentage:total_hours_today.total_seconds %}
+                        {% with over_percent=overtime_hours.total_seconds|percentage:total_hours_today.total_seconds %}
+                            <div class="productive-time" style="left: 12.5%; width: {{ prod_percent }}%;"></div>
+                            {% if break_hours %}
+                            <div class="break-time" style="left: {{ prod_percent|add:12.5 }}%; width: {{ break_percent }}%;"></div>
+                            {% endif %}
+                            {% if overtime_hours %}
+                            <div class="overtime" style="left: {{ prod_percent|add:break_percent|add:12.5 }}%; width: {{ over_percent }}%;"></div>
+                            {% endif %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    {% endif %}
+                </div>
+                <div class="timeline-labels">
+                    <span>06:00</span>
+                    <span>07:00</span>
+                    <span>08:00</span>
+                    <span>09:00</span>
+                    <span>10:00</span>
+                    <span>11:00</span>
+                    <span>12:00</span>
+                    <span>01:00</span>
+                    <span>02:00</span>
+                    <span>03:00</span>
+                    <span>04:00</span>
+                    <span>05:00</span>
+                    <span>06:00</span>
+                    <span>07:00</span>
+                    <span>08:00</span>
+                    <span>09:00</span>
+                    <span>10:00</span>
+                    <span>11:00</span>
+                </div>
+            </div>
+
+            <!-- Timeline Legend -->
+            <div class="d-flex gap-4">
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot productive"></span>
+                    <small>Total Working hours</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot productive"></span>
+                    <small>Productive Hours</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot break"></span>
+                    <small>Break hours</small>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="legend-dot overtime"></span>
+                    <small>Overtime</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Timeline styles */
+.timeline-container {
+    padding: 20px 0;
+}
+
+.timeline {
+    height: 24px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.timeline > div {
+    position: absolute;
+    height: 100%;
+    top: 0;
+}
+
+.productive-time {
+    background: #00e676;
+    border-radius: 12px;
+}
+
+.break-time {
+    background: #ffd600;
+    border-radius: 12px;
+}
+
+.overtime {
+    background: #2196f3;
+    border-radius: 12px;
+}
+
+.timeline-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.legend-dot.productive {
+    background: #00e676;
+}
+
+.legend-dot.break {
+    background: #ffd600;
+}
+
+.legend-dot.overtime {
+    background: #2196f3;
+}
+</style>
+{% endblock %}

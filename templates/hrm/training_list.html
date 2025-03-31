@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% block title %}Trainers{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      padding: 20px;
+      border-radius: 10px;
+      width: 500px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .modal-content .form-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .modal-content .form-row > div {
+      width: 48%;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .modal-footer button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-footer .cancel {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .modal-footer .cancel:hover {
+      background-color: #5a6268;
+    }
+
+    .modal-footer .add {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .modal-footer .add:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Training List</h1>
+    <button onclick="openModal()">Add Training</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Training Type</th>
+        <th>Trainer</th>
+        <th>Employee</th>
+        <th>Time Duration</th>
+        <th>Description</th>
+        <th>Cost</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for training in trainings %}
+        <tr>
+          <td>{{ training.training_type.name }}</td>
+          <td>{{ training.trainer.name }}</td>
+          <td>
+            {% for employee in training.employees.all %}
+              {{ employee.name }}<br>
+            {% endfor %}
+          </td>
+          <td>{{ training.end_date|date:"Y-m-d" }}</td>
+          <td>{{ training.description }}</td>
+          <td>{{ training.cost }}</td>
+          <td>{{ training.status }}</td>
+          <td>
+            <button>Edit</button>
+            <button>Delete</button>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal Form for Adding Training -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Add Training</h2>
+      <form method="POST">
+        {% csrf_token %}
+
+        <!-- Training Type and Trainer Fields (in a row) -->
+        <div class="form-row">
+          <div>
+            <label for="trainingType">Training Type</label>
+            <select id="trainingType" name="trainingType" required>
+              <option value="">Select Training Type</option>
+              {% for training_type in training_types %}
+                <option value="{{ training_type.id }}">{{ training_type.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label for="trainer">Trainer</label>
+            <select id="trainer" name="trainer" required>
+              <option value="">Select Trainer</option>
+              {% for trainer in trainers %}
+                <option value="{{ trainer.id }}">{{ trainer.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Employees Field -->
+        <label for="employees">Employees</label>
+        <select id="employees" name="employees" multiple required>
+          {% for employee in employees %}
+            <option value="{{ employee.id }}">{{ employee.name }}</option>
+          {% endfor %}
+        </select>
+
+        <!-- Cost, Start Date, and End Date Fields (in a row) -->
+        <div class="form-row">
+          <div>
+            <label for="cost">Training Cost</label>
+            <input type="number" id="cost" name="cost" required>
+          </div>
+
+          <div>
+            <label for="startDate">Start Date</label>
+            <input type="date" id="startDate" name="startDate" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div>
+            <label for="endDate">End Date</label>
+            <input type="date" id="endDate" name="endDate" required>
+          </div>
+        </div>
+
+        <!-- Description and Status Fields (single columns as per request) -->
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3" required></textarea>
+
+        <label for="status">Status</label>
+        <select id="status" name="status" required>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+
+        <div class="modal-footer">
+          <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="add">Add Training</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+{% endblock %}

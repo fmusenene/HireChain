@@ -1,0 +1,215 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<!-- templates/employee_profile.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ employee.name }} - Employee Profile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Add your styles here */
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Left Sidebar -->
+        <div class="sidebar">
+            <!-- Employee Card -->
+            <div class="card">
+                <div class="employee-header">
+                    <img src="{% if employee.profile_image %}{{ employee.profile_image.url }}{% else %}/media/profile_images/default_profile.png{% endif %}" alt="Employee Image">
+                    <h2>{{ employee.name }}</h2>
+                    <p>{{ employee.designation }}</p>
+                    <p>{{ years_of_experience }} Years of Experience</p>
+                </div>
+                <hr>
+                <div class="employee-details">
+                    <div class="left">
+                        <p>Client ID</p>
+                        <p>Team</p>
+                        <p>Date of Join</p>
+                        <p>Report Office</p>
+                    </div>
+                    <div class="right">
+                        <p>{{ employee.client_id }}</p>
+                        <p>{{ employee.team }}</p>
+                        <p>{{ employee.date_of_join|date:"d M Y" }}</p>
+                        <p>{{ employee.report_office }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="basic-info">
+                    <h3>Basic Information</h3>
+                    <div class="left">
+                        <p>Phone</p>
+                        <p>Email</p>
+                        <p>Gender</p>
+                        <p>Birthday</p>
+                        <p>Address</p>
+                    </div>
+                    <div class="right">
+                        <p>{{ employee.phone }}</p>
+                        <p>{{ employee.email }}</p>
+                        <p>{{ employee.gender }}</p>
+                        <p>{{ employee.date_of_birth|date:"d M Y" }}</p>
+                        <p>{{ employee.address }}</p>
+                    </div>
+                </div>
+                <hr>
+                <div class="personal-info">
+                    <h3>Personal Information</h3>
+                    <div class="left">
+                        <p>Passport No/ID</p>
+                        <p>Exp Date</p>
+                        <p>Nationality</p>
+                        <p>Religion</p>
+                        <p>Marital Status</p>
+                        <p>Employment of Spouse</p>
+                        <p>No. of Children</p>
+                    </div>
+                    <div class="right">
+                        <p>{{ employee.passport_no }}</p>
+                        <p>{{ employee.passport_exp_date|date:"d M Y" }}</p>
+                        <p>{{ employee.nationality }}</p>
+                        <p>{{ employee.religion }}</p>
+                        <p>{{ employee.marital_status|default:"Not Provided" }}</p>
+                        <p>{{ employee.employment_of_spouse|yesno:"Yes,No" }}</p>
+                        <p>{{ employee.number_of_children }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact Card -->
+            <div class="card">
+                <h3>Emergency Contact Number</h3>
+                <div class="emergency-contact">
+                    {% for contact in emergency_contacts %}
+                        <div class="{% if contact.is_primary %}primary{% else %}secondary{% endif %}">
+                            <h4>{% if contact.is_primary %}Primary{% else %}Secondary{% endif %}</h4>
+                            <div class="left">
+                                <p>Name</p>
+                                <p>Relationship</p>
+                            </div>
+                            <div class="right">
+                                <p>{{ contact.name }}</p>
+                                <p>{{ contact.relationship }}</p>
+                                <p>{{ contact.phone }}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Section -->
+        <div class="main-content">
+            <!-- Collapsible Cards -->
+            <div class="card collapsible">
+                <div class="card-header" onclick="toggleCollapse('about')">
+                    <h3>About Employee</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="card-content" id="about">
+                    <p>{{ employee.about }}</p>
+                </div>
+            </div>
+
+            <div class="card collapsible">
+                <div class="card-header" onclick="toggleCollapse('bank')">
+                    <h3>Bank Information</h3>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="card-content" id="bank">
+                    <div class="detail-item">
+                        <label>Bank Name:</label>
+                        <span>{{ employee.bank_name }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Bank Account No:</label>
+                        <span>{{ employee.bank_account_no }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Branch:</label>
+                        <span>{{ employee.branch }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Education and Experience Cards -->
+            <div class="card">
+                <h3>Education Details</h3>
+                {% for education in educations %}
+                    <div class="left">
+                        <p>School</p>
+                        <p>Award</p>
+                    </div>
+                    <div class="right">
+                        <p>{{ education.school }}</p>
+                        <p>{{ education.award }}</p>
+                        <p>{{ education.year }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <div class="card">
+                <h3>Experience</h3>
+                {% for experience in experiences %}
+                    <div class="left">
+                        <p>Company</p>
+                        <p>Role</p>
+                    </div>
+                    <div class="right">
+                        <p>{{ experience.company }}</p>
+                        <p>{{ experience.role }}</p>
+                        <p>{{ experience.start_year }} - {{ experience.end_year }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- Projects and Assets Toggle -->
+            <div class="card">
+                <div class="toggle-buttons">
+                    <button onclick="showSection('projects')">Projects</button>
+                    <button onclick="showSection('assets')">Assets</button>
+                </div>
+                <div id="projects" class="toggle-section">
+                    {% for project in projects %}
+                        <div class="card">
+                            <h4>{{ project.name }}</h4>
+                            <p>{{ project.details }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div id="assets" class="toggle-section" style="display: none;">
+                    {% for asset in assets %}
+                        <div class="card">
+                            <h4>{{ asset.name }}</h4>
+                            <p>{{ asset.details }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript Functions
+        function toggleCollapse(id) {
+            const content = document.getElementById(id);
+            content.style.display = content.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function showSection(sectionId) {
+            document.querySelectorAll('.toggle-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            document.getElementById(sectionId).style.display = 'block';
+        }
+    </script>
+</body>
+</html>
+
+{% endblock %}

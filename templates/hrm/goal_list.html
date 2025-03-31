@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goal Tracking</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 20px;
+      background-color: #f4f4f4;
+      border-bottom: 1px solid #ddd;
+    }
+    .header button {
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .header button:hover {
+      background-color: #218838;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid #ddd;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #f4f4f4;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 5px;
+      width: 400px;
+    }
+    .modal-content input, .modal-content select, .modal-content textarea {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    .modal-footer {
+      display: flex;
+      justify-content: flex-start;
+      margin-top: 20px;
+    }
+    .modal-footer button {
+      padding: 10px 20px;
+      margin-right: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .modal-footer .cancel {
+      background-color: #ccc;
+      color: black;
+    }
+    .modal-footer .add {
+      background-color: #28a745;
+      color: white;
+    }
+    .modal-footer .cancel:hover {
+      background-color: #bbb;
+    }
+    .modal-footer .add:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Goal Tracking</h1>
+    <button onclick="openModal()">Add Goal</button>
+  </div>
+
+  <!-- Django Form -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Add Goal Tracking</h2>
+      <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="modal-footer">
+          <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="add">Add Goal Tracking</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Goal Tracking Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>Goal Type</th>
+        <th>Subject</th>
+        <th>Target Achievement</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Progress</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for goal in goals %}
+      <tr>
+        <td>{{ goal.goal_type }}</td>
+        <td>{{ goal.subject }}</td>
+        <td>{{ goal.target_achievement }}</td>
+        <td>{{ goal.start_date }}</td>
+        <td>{{ goal.end_date }}</td>
+        <td>{{ goal.description }}</td>
+        <td>{{ goal.get_status_display }}</td>
+        <td>{{ goal.progress }}%</td>
+        <td>
+          <button>Edit</button> 
+          <button>Delete</button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="9" style="text-align:center;">No goals added yet.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside the modal content
+    window.onclick = function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>

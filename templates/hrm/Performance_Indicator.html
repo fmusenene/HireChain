@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% block title %}Performance Indicator{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Indicator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+
+        a {
+            text-decoration: none;
+            color: #3498db;
+        }
+
+        a:hover {
+            color: #2980b9;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header .add-button {
+            background: #3498db;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        header .add-button:hover {
+            background: #2980b9;
+        }
+
+        /* Table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f8f8f8;
+            font-weight: bold;
+            color: #333;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 8px;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+        }
+
+        .modal label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        .modal input, .modal select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .modal-buttons button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .modal-buttons button[type="submit"] {
+            background: #3498db;
+            color: #fff;
+        }
+
+        .modal-buttons button[type="button"] {
+            background: #f44336;
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <h1>Performance Indicator Management</h1>
+            <button class="add-button" onclick="openModal()">Add Indicator</button>
+        </header>
+
+        <!-- Table displaying existing performance indicators (if any) -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Designation</th>
+                    <th>Department</th>
+                    <th>Approved By</th>
+                    <th>Created Date</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for indicator in performance_indicators %}
+                <tr>
+                    <td>{{ indicator.designation.name }}</td>
+                    <td>{{ indicator.customer_experience }}</td>
+                    <td>{{ indicator.marketing }}</td>
+                    <td>{{ indicator.management }}</td>
+                    <td>
+                        <!-- Add action buttons like Edit or Delete if necessary -->
+                        <a href="#">Edit</a> | <a href="#">Delete</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Modal Form to Add a New Performance Indicator -->
+        <div id="addIndicatorModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h2>Add Performance Indicator</h2>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form.as_p }}
+                    <div class="modal-buttons">
+                        <button type="button" onclick="closeModal()">Cancel</button>
+                        <button type="submit">Add Indicator</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Open the modal
+        function openModal() {
+            document.getElementById("addIndicatorModal").style.display = "block";
+        }
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById("addIndicatorModal").style.display = "none";
+        }
+
+        // Close the modal if clicked outside of it
+        window.onclick = function(event) {
+            const modal = document.getElementById("addIndicatorModal");
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+    </script>
+</body>
+</html>
+
+
+{% endblock %}

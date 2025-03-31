@@ -1,0 +1,329 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container-fluid p-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Leave Types</h2>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addLeaveModal">
+            <i class="fas fa-plus"></i> Add Leave Type
+        </button>
+    </div>
+
+    <!-- Display Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert {% if message.tags == 'error' %}alert-danger{% else %}alert-success{% endif %} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Bulk Actions -->
+    <div class="mb-3 bulk-actions" style="display: none;">
+        <button class="btn btn-danger" onclick="bulkDelete()">
+            <i class="fas fa-trash"></i> Delete Selected
+        </button>
+    </div>
+
+    <!-- Leave Types Table Card -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                                    <label class="form-check-label" for="selectAll"></label>
+                                </div>
+                            </th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Default Days</th>
+                            <th>Created At</th>
+                            <th>Updated At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave_type in leave_types %}
+                        <tr>
+                            <td>
+                                <div class="form-check">
+                                    <input class="form-check-input leave-type-checkbox" type="checkbox" value="{{ leave_type.id }}" onchange="updateBulkActions()">
+                                </div>
+                            </td>
+                            <td>{{ leave_type.name }}</td>
+                            <td>{{ leave_type.description|default:"-" }}</td>
+                            <td>{{ leave_type.default_days }}</td>
+                            <td>{{ leave_type.created_at|date:"M d, Y H:i" }}</td>
+                            <td>{{ leave_type.updated_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <div class="btn-group">
+                                    <button class="btn btn-sm btn-outline-primary" onclick="editLeaveType({{ leave_type.id }}, '{{ leave_type.name }}', '{{ leave_type.description|default:'' }}', {{ leave_type.default_days }})">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="deleteLeaveType({{ leave_type.id }}, '{{ leave_type.name }}')">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center">No leave types found.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Leave Type Modal -->
+    <div class="modal fade" id="addLeaveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Leave Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" action="{% url 'leave_type' %}">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Default Days</label>
+                            <input type="number" class="form-control" name="default_days" required min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Leave Type Modal -->
+    <div class="modal fade" id="editLeaveModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Leave Type</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form method="post" id="editForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="edit">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" id="editName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="description" id="editDescription" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Default Days</label>
+                            <input type="number" class="form-control" name="default_days" id="editDefaultDays" required min="0">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="deleteMessage" class="mb-0 text-center fs-5"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: transform 0.2s;
+}
+.card:hover {
+    transform: translateY(-5px);
+}
+.btn-group .btn {
+    padding: 0.25rem 0.5rem;
+}
+.btn-group .btn i {
+    width: 16px;
+}
+.bulk-actions {
+    transition: all 0.3s ease;
+}
+.modal-dialog-centered {
+    display: flex;
+    align-items: center;
+    min-height: calc(100% - 1rem);
+}
+</style>
+
+<script>
+function toggleSelectAll(checkbox) {
+    const checkboxes = document.getElementsByClassName('leave-type-checkbox');
+    for (let i = 0; i < checkboxes.length; i++) {
+        checkboxes[i].checked = checkbox.checked;
+    }
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const checkboxes = document.getElementsByClassName('leave-type-checkbox');
+    const bulkActions = document.querySelector('.bulk-actions');
+    let checkedCount = 0;
+    
+    for (let i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            checkedCount++;
+        }
+    }
+    
+    if (checkedCount > 0) {
+        bulkActions.style.display = 'block';
+    } else {
+        bulkActions.style.display = 'none';
+        document.getElementById('selectAll').checked = false;
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function bulkDelete() {
+    const checkboxes = document.getElementsByClassName('leave-type-checkbox');
+    const selectedIds = [];
+    
+    for (let i = 0; i < checkboxes.length; i++) {
+        if (checkboxes[i].checked) {
+            selectedIds.push(checkboxes[i].value);
+        }
+    }
+    
+    if (selectedIds.length > 0) {
+        const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+        const message = `Are you sure you want to delete ${selectedIds.length} leave type(s)?`;
+        document.getElementById('deleteMessage').textContent = message;
+        
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            const csrftoken = getCookie('csrftoken');
+            
+            // Create a promise array for all delete operations
+            const deletePromises = selectedIds.map(id => 
+                fetch(`/leave-type/delete/${id}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrftoken,
+                        'Content-Type': 'application/json'
+                    }
+                })
+            );
+            
+            // Execute all deletes and reload page when done
+            Promise.all(deletePromises)
+                .then(responses => {
+                    const allSuccessful = responses.every(response => response.ok);
+                    if (allSuccessful) {
+                        window.location.reload();
+                    } else {
+                        throw new Error('Some deletions failed');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting leave types:', error);
+                    alert('An error occurred while deleting leave types.');
+                });
+            
+            deleteModal.hide();
+        };
+        
+        deleteModal.show();
+    }
+}
+
+function editLeaveType(id, name, description, defaultDays) {
+    document.getElementById('editForm').action = `/leave-type/edit/${id}/`;
+    document.getElementById('editName').value = name;
+    document.getElementById('editDescription').value = description;
+    document.getElementById('editDefaultDays').value = defaultDays;
+    new bootstrap.Modal(document.getElementById('editLeaveModal')).show();
+}
+
+function deleteLeaveType(id, name) {
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    const message = `Are you sure you want to delete the leave type "${name}"?`;
+    document.getElementById('deleteMessage').textContent = message;
+    
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        const csrftoken = getCookie('csrftoken');
+        
+        fetch(`/leave-type/delete/${id}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                throw new Error('Delete failed');
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting leave type:', error);
+            alert('An error occurred while deleting the leave type.');
+        });
+        
+        deleteModal.hide();
+    };
+    
+    deleteModal.show();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+  <h2>Job Applications</h2>
+  {% if messages %}
+    {% for message in messages %}
+      <div class="message {{ message.tags }}">{{ message }}</div>
+    {% endfor %}
+  {% endif %}
+  <table border="1">
+    <tr>
+      <th>Full Name</th>
+      <th>Email</th>
+      <th>Position</th>
+      <th>Status</th>
+      <th>Actions</th>
+    </tr>
+    {% for application in applications %}
+    <tr>
+      <td>{{ application.full_name }}</td>
+      <td>{{ application.email }}</td>
+      <td>{{ application.position_applied }}</td>
+      <td>{{ application.get_status_display }}</td>
+      <td>
+        <a href="{% url 'recruitment:update_application_status' application.id 'scheduled' %}">Schedule</a> |
+        <a href="{% url 'recruitment:update_application_status' application.id 'interviewing' %}">Interview</a> |
+        <a href="{% url 'recruitment:update_application_status' application.id 'offered' %}">Offer</a> |
+        <a href="{% url 'recruitment:update_application_status' application.id 'hired' %}">Hire</a> |
+        <a href="{% url 'recruitment:update_application_status' application.id 'rejected' %}">Reject</a>
+      </td>
+    </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

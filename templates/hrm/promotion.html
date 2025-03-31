@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Trainers{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Promotion List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f8f9fa;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    table tr:hover {
+      background-color: #ddd;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .modal-content input,
+    .modal-content select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .modal-footer button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-footer .cancel {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .modal-footer .cancel:hover {
+      background-color: #5a6268;
+    }
+
+    .modal-footer .add {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .modal-footer .add:hover {
+      background-color: #218838;
+    }
+
+
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Promotion List</h1>
+    <button onclick="openModal()">Add Promotion</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Promoted Employee</th>
+        <th>Department</th>
+        <th>Designation From</th>
+        <th>Designation To</th>
+        <th>Promotion Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for promotion in promotions %}
+        <tr>
+          <td>{{ promotion.employee.name }}</td>
+          <td>{{ promotion.department }}</td>
+          <td>{{ promotion.designation_from }}</td>
+          <td>{{ promotion.designation_to }}</td>
+          <td>{{ promotion.promotion_date }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal Form for Adding Promotion -->
+<!-- Modal Form for Adding Promotion -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h2>Add Promotion</h2>
+    <form method="POST">
+      {% csrf_token %}
+      
+      <!-- Employee Field -->
+      <label for="employee">Promotion For</label>
+      <select id="employee" name="employee" required>
+        <option value="">Select Employee</option>
+        {% for employee in employees %}
+          <option value="{{ employee.id }}">{{ employee.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Department Field (Dynamic from DB) -->
+      <label for="department">Department</label>
+      <select id="department" name="department" required>
+        <option value="">Select Department</option>
+        {% for department in departments %}
+          <option value="{{ department.id }}">{{ department.name }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Designation From (Dynamic from DB) -->
+      <label for="designation_from">Promotion From</label>
+      <select id="designation_from" name="designation_from" required>
+        <option value="">Select Designation From</option>
+        {% for designation in designations %}
+          <option value="{{ designation.id }}">{{ designation.title }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Designation To (Dynamic from DB) -->
+      <label for="designation_to">Promotion To</label>
+      <select id="designation_to" name="designation_to" required>
+        <option value="">Select Designation To</option>
+        {% for designation in designations %}
+          <option value="{{ designation.id }}">{{ designation.title }}</option>
+        {% endfor %}
+      </select>
+
+      <!-- Promotion Date -->
+      <label for="promotion_date">Promotion Date</label>
+      <input type="date" id="promotion_date" name="promotion_date" required>
+
+      <div class="modal-footer">
+        <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+        <button type="submit" class="add">Add Promotion</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+
+{% endblock %}

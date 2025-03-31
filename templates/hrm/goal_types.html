@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Goal Type{% endblock %}
+
+{% block content %}
+
+<div class="header">
+  <h1>Goal Types</h1>
+  <button onclick="openModal()">Add Goal</button>
+</div>
+
+<!-- Form for adding Goal Type -->
+<div id="modal" class="modal">
+  <div class="modal-content">
+    <h2>Add Goal Type</h2>
+    <form method="POST" action="{% url 'goal_type_view' %}">
+      {% csrf_token %}
+      {{ form.as_p }} <!-- This renders the form fields -->
+      <div class="modal-footer">
+        <button class="cancel" type="button" onclick="closeModal()">Cancel</button>
+        <button class="add" type="submit">Add Goal Type</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Display Goal Types -->
+<table>
+  <thead>
+    <tr>
+      <th>Type</th>
+      <th>Description</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for goal in goals %}
+      <tr>
+        <td>{{ goal.name }}</td>
+        <td>{{ goal.description }}</td>
+        <td>{{ goal.status }}</td>
+        <td><button>Edit</button> <button>Delete</button></td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<script>
+  function openModal() {
+    document.getElementById('modal').style.display = 'flex';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').style.display = 'none';
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById('modal');
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+</script>
+
+{% endblock %}

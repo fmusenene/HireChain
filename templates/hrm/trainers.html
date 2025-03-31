@@ -1,0 +1,231 @@
+{% extends 'base.html' %}
+{% block title %}Trainers{% endblock %}
+{% block content %}
+<style>
+/* Align 'Add Trainer' button to the right */
+.add-trainer-btn {
+    float: right;
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+    margin: 20px 0;
+}
+
+.add-trainer-btn:hover {
+    background-color: #45a049;
+}
+
+/* Style table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 10px;
+    text-align: left;
+}
+
+/* Modal styling */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 8px;
+    width: 70%;
+    max-width: 800px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    overflow-y: auto;
+}
+
+/* Organizing form fields in columns */
+.form-columns {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-column {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+input, select, textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+/* Modal buttons */
+.modal-buttons {
+    text-align: right;
+    margin-top: 20px;
+}
+
+.cancel-btn, .add-btn {
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 14px;
+}
+
+.cancel-btn {
+    background-color: #ccc;
+}
+
+.cancel-btn:hover {
+    background-color: #bbb;
+}
+
+.add-btn {
+    background-color: #4CAF50;
+    color: white;
+}
+
+.add-btn:hover {
+    background-color: #45a049;
+}
+
+/* Hidden class for hiding the modal after submission */
+.hidden {
+    display: none;
+}
+
+</style>
+<h1>Trainers</h1>
+<button class="add-trainer-btn" onclick="openModal()">Add Trainer</button>
+
+<table>
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Phone</th>
+            <th>Email</th>
+            <th>Description</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for trainer in trainers %}
+        <tr>
+            <td>{{ trainer.first_name }} {{ trainer.last_name }}</td>
+            <td>{{ trainer.phone }}</td>
+            <td>{{ trainer.email }}</td>
+            <td>{{ trainer.description }}</td>
+            <td>{{ trainer.status }}</td>
+            <td>
+                <button>Edit</button>
+                <button>Delete</button>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Modal for adding a trainer -->
+<div id="addTrainerModal" class="modal {% if form_submitted %}hidden{% endif %}">
+    <div class="modal-content">
+        <h2>Add Trainer</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-columns">
+                <!-- First Name, Last Name, Role, and Phone on the same row -->
+                <div class="form-column half-width">
+                    <label for="firstName">First Name:</label>
+                    <input type="text" id="firstName" name="first_name" required>
+                </div>
+                <div class="form-column half-width">
+                    <label for="lastName">Last Name:</label>
+                    <input type="text" id="lastName" name="last_name" required>
+                </div>
+                <div class="form-column half-width">
+                    <label for="role">Role:</label>
+                    <input type="text" id="role" name="role" required>
+                </div>
+                <div class="form-column half-width">
+                    <label for="phone">Phone:</label>
+                    <input type="tel" id="phone" name="phone" required>
+                </div>
+            </div>
+
+            <!-- Full-width fields for Email, Description, and Status -->
+            <div class="form-column full-width">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-column full-width">
+                <label for="description">Description:</label>
+                <input type="text" id="description" name="description">
+            </div>
+            <div class="form-column full-width">
+                <label for="status">Status:</label>
+                <select id="status" name="status">
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+
+            <!-- Modal buttons -->
+            <div class="modal-buttons">
+                <button type="button" class="cancel-btn" onclick="closeModal()">Cancel</button>
+                <button type="submit" class="add-btn">Add Trainer</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Modal open/close functions
+    function openModal() {
+        document.getElementById('addTrainerModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('addTrainerModal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        const modal = document.getElementById('addTrainerModal');
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    }
+</script>
+
+{% endblock %}

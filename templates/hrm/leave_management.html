@@ -1,0 +1,252 @@
+{% extends 'base.html' %}
+{% block title %}Leave Management{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Management</title>
+    <style>
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .add-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.4);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 500px;
+            border-radius: 5px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .cancel-button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .cancel-button:hover {
+            background-color: #da190b;
+        }
+
+        .submit-button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Leave Management</h1>
+        <button class="add-button" onclick="openModal()">Add Leave</button>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>From</th>
+                <th>To</th>
+                <th>No of Days</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for leave in leaves %}
+            <tr>
+                <td>{{ leave.employee.name }}</td>
+                <td>{{ leave.leave_type.name }}</td>
+                <td>{{ leave.from_date|date:"Y-m-d" }}</td>
+                <td>{{ leave.to_date|date:"Y-m-d" }}</td>
+                <td>{{ leave.no_of_days }}</td>
+                <td>{{ leave.status|title }}</td>
+                <td>
+                    <button onclick="editLeave({{ leave.id }})">Edit</button>
+                    <button onclick="deleteLeave({{ leave.id }})">Delete</button>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="text-align: center;">No leave records found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Modal Form -->
+    <div id="leaveModal" class="modal">
+        <div class="modal-content">
+            <h2>Add Leave</h2>
+            <form method="POST" id="leaveForm">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="employee">Employee Name</label>
+                    <select id="employee" name="employee" required>
+                        <option value="">Select Employee</option>
+                        {% for employee in employees %}
+                        <option value="{{ employee.id }}">{{ employee.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="leave_type">Leave Type</label>
+                    <select id="leave_type" name="leave_type" required>
+                        <option value="">Select Leave Type</option>
+                        {% for leave_type in leave_types %}
+                        <option value="{{ leave_type.id }}">{{ leave_type.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="from_date">From Date</label>
+                    <input type="date" id="from_date" name="from_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="to_date">To Date</label>
+                    <input type="date" id="to_date" name="to_date" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="no_of_days">Number of Days</label>
+                    <input type="number" id="no_of_days" name="no_of_days" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="remaining_days">Remaining Days</label>
+                    <input type="number" id="remaining_days" name="remaining_days" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="reason">Reason</label>
+                    <textarea id="reason" name="reason" rows="4" required></textarea>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="cancel-button" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="submit-button">Add Leave</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById('leaveModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('leaveModal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('leaveModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Calculate number of days when dates change
+        document.getElementById('from_date').addEventListener('change', calculateDays);
+        document.getElementById('to_date').addEventListener('change', calculateDays);
+
+        function calculateDays() {
+            const fromDate = new Date(document.getElementById('from_date').value);
+            const toDate = new Date(document.getElementById('to_date').value);
+            const diffTime = Math.abs(toDate - fromDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            document.getElementById('no_of_days').value = diffDays;
+        }
+    </script>
+</body>
+</html>
+{% endblock %} 

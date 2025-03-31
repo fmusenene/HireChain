@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+  <h1 class="text-center mb-4">Upcoming Employee Birthdays</h1>
+
+  <!-- Filters Section -->
+  <div class="filter-section d-flex justify-content-between">
+    <form method="GET" class="w-100">
+      <div class="d-flex justify-content-between w-100">
+        <div class="filter-item">
+          <label for="month" class="form-label">Filter by Month:</label>
+          <select id="month" name="month" class="form-select" onchange="this.form.submit()">
+            <option value="">All Months</option>
+            {% for month in months %}
+            <option value="{{ month.value }}" {% if request.GET.month == month.value %}selected{% endif %}>{{ month.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="department" class="form-label">Filter by Department:</label>
+          <select id="department" name="department" class="form-select" onchange="this.form.submit()">
+            <option value="">All Departments</option>
+            {% for dept in departments %}
+            <option value="{{ dept.name }}" {% if request.GET.department == dept.name %}selected{% endif %}>{{ dept.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- Birthdays Table -->
+  <table class="table table-striped table-hover mt-4">
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Name</th>
+        <th scope="col">Department</th>
+        <th scope="col">Month</th>
+        <th scope="col">Days Remaining</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for bday in birthdays %}
+      <tr>
+        <!-- ID -->
+        <td>{{ forloop.counter }}</td>
+
+        <!-- Name (with Profile Image) -->
+        <td>
+          <div class="d-flex align-items-center">
+            <img src="{{ bday.profile_image }}" alt="Profile Image" 
+                 style="width: 50px; height: 50px; border-radius: 50%; margin-right: 10px;">
+            <div>
+              <p class="mb-0 fw-bold">{{ bday.name }}</p>
+              <!-- Designation Below Name (Fainter) -->
+              <p class="mb-0 text-muted">{{ bday.designation }}</p>  <!-- Fainter Designation -->
+            </div>
+          </div>
+        </td>
+
+        <!-- Department -->
+        <td>{{ bday.department }}</td>
+
+        <!-- Month -->
+        <td>{{ bday.date_of_birth|date:"F" }}</td>  <!-- Display Month -->
+
+        <!-- Days Remaining -->
+        <td>{{ bday.days_remaining }}</td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="5" class="text-center">No birthdays found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

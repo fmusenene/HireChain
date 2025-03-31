@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Training Type{% endblock %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Training Type</title>
+  <style>
+    /* Your existing CSS styles */
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Training Types</h1>
+    <button onclick="openModal()">Add Training Type</button>
+  </div>
+
+  <!-- Form to Add Training Type -->
+  <form method="post">
+    {% csrf_token %}
+    <div id="modal" class="modal">
+      <div class="modal-content">
+        <h2>Add Training Type</h2>
+        {{ form.as_p }}
+        <div class="modal-footer">
+          <button class="cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="add">Add Training Type</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for training_type in training_types %}
+        <tr>
+          <td>{{ training_type.type }}</td>
+          <td>{{ training_type.description }}</td>
+          <td>{{ training_type.status }}</td>
+          <td>
+            <button>Edit</button>
+            <button>Delete</button>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="4">No training types available.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+{% endblock %}

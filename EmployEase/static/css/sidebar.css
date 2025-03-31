@@ -1,0 +1,18 @@
+.nav-item { 
+    cursor: pointer;
+    color: #007bff;
+    text-decoration: none;
+  } 
+  .nav-link:hover { 
+    background-color: #007b;
+
+    
+
+  }
+  .nav-link.active {
+    color: red;
+    background-color: #007bff;
+
+  }
+
+

@@ -1,0 +1,389 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header Section -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">Employee Details</h2>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a href="{% url 'hrm' %}">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'employee_list' %}">Employees</a></li>
+                    <li class="breadcrumb-item active">{{ employee.name }}</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <!-- Employee Profile Card -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    {% if employee.profile_image %}
+                    <img src="{{ employee.profile_image.url }}" alt="{{ employee.name }}" 
+                         class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% else %}
+                    <img src="{% static 'img/media/profile_images/default_profile.png' %}" alt="Default" 
+                         class="rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    {% endif %}
+                    <h4 class="mb-1">{{ employee.name }}</h4>
+                    <p class="text-muted mb-3">{{ employee.designation.name }}</p>
+                    <div class="d-flex justify-content-center gap-2 mb-3">
+                        <span class="badge bg-success">{{ employee.status }}</span>
+                        <span class="badge bg-info">{{ employee.department.name }}</span>
+                    </div>
+                    <div class="d-grid gap-2">
+                        <button class="btn btn-outline-primary">
+                            <i class="fas fa-envelope me-2"></i>Message
+                        </button>
+                        <button class="btn btn-outline-secondary">
+                            <i class="fas fa-phone me-2"></i>Call
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <!-- Tabs Section -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="employeeTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="about-tab" data-bs-toggle="tab" data-bs-target="#about" type="button" role="tab">
+                                About Employee
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="bank-tab" data-bs-toggle="tab" data-bs-target="#bank" type="button" role="tab">
+                                Bank Information
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="family-tab" data-bs-toggle="tab" data-bs-target="#family" type="button" role="tab">
+                                Family Information
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="education-tab" data-bs-toggle="tab" data-bs-target="#education" type="button" role="tab">
+                                Education Details
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="employeeTabContent">
+                        <!-- About Tab -->
+                        <div class="tab-pane fade show active" id="about" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Employee ID:</strong> {{ employee.employee_id }}</p>
+                                    <p><strong>Email:</strong> {{ employee.email }}</p>
+                                    <p><strong>Phone:</strong> {{ employee.phone }}</p>
+                                    <p><strong>Department:</strong> {{ employee.department.name }}</p>
+                                    <p><strong>Designation:</strong> {{ employee.designation.name }}</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Joining Date:</strong> {{ employee.joining_date|date:"F d, Y" }}</p>
+                                    <p><strong>Years of Experience:</strong> {{ years_of_experience }}</p>
+                                    <p><strong>Status:</strong> {{ employee.status }}</p>
+                                    <p><strong>Date of Birth:</strong> {{ employee.date_of_birth|date:"F d, Y" }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Information Tab -->
+                        <div class="tab-pane fade" id="bank" role="tabpanel">
+                            <p><strong>Bank Name:</strong> {{ employee.bank_name|default:"Not provided" }}</p>
+                            <p><strong>Account Number:</strong> {{ employee.account_number|default:"Not provided" }}</p>
+                            <p><strong>Bank Branch:</strong> {{ employee.bank_branch|default:"Not provided" }}</p>
+                        </div>
+
+                        <!-- Family Information Tab -->
+                        <div class="tab-pane fade" id="family" role="tabpanel">
+                            <div class="accordion" id="familyAccordion">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#spouseInfo">
+                                            Spouse Information
+                                        </button>
+                                    </h2>
+                                    <div id="spouseInfo" class="accordion-collapse collapse show" data-bs-parent="#familyAccordion">
+                                        <div class="accordion-body">
+                                            <p><strong>Name:</strong> {{ employee.spouse_name|default:"Not provided" }}</p>
+                                            <p><strong>Occupation:</strong> {{ employee.spouse_occupation|default:"Not provided" }}</p>
+                                            <p><strong>Contact:</strong> {{ employee.spouse_contact|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#childrenInfo">
+                                            Children Information
+                                        </button>
+                                    </h2>
+                                    <div id="childrenInfo" class="accordion-collapse collapse" data-bs-parent="#familyAccordion">
+                                        <div class="accordion-body">
+                                            <p><strong>Number of Children:</strong> {{ employee.number_of_children|default:"Not provided" }}</p>
+                                            <p><strong>Children's Names:</strong> {{ employee.children_names|default:"Not provided" }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Education Details Tab -->
+                        <div class="tab-pane fade" id="education" role="tabpanel">
+                            <div class="accordion" id="educationAccordion">
+                                {% for education in employee.educations.all %}
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header">
+                                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#education{{ forloop.counter }}">
+                                            <div class="d-flex align-items-center">
+                                                <i class="fas fa-graduation-cap me-2"></i>
+                                                <div>
+                                                    <div class="fw-bold">{{ education.school }}</div>
+                                                    <small class="text-muted">{{ education.award }}</small>
+                                                </div>
+                                            </div>
+                                        </button>
+                                    </h2>
+                                    <div id="education{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#educationAccordion">
+                                        <div class="accordion-body">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted mb-1">School/Institution</label>
+                                                        <p class="mb-0">
+                                                            <i class="fas fa-university me-2 text-primary"></i>
+                                                            {{ education.school }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted mb-1">Award/Degree</label>
+                                                        <p class="mb-0">
+                                                            <i class="fas fa-award me-2 text-primary"></i>
+                                                            {{ education.award }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="col-12">
+                                                    <div class="mb-3">
+                                                        <label class="form-label text-muted mb-1">Year</label>
+                                                        <p class="mb-0">
+                                                            <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                                            {{ education.year }}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="text-center py-4">
+                                    <i class="fas fa-graduation-cap fa-2x text-muted mb-3"></i>
+                                    <p class="text-muted mb-0">No education records found.</p>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Emergency Contact Section -->
+            <div class="card mb-4">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-phone-alt me-2"></i>Emergency Contact Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="emergencyContactAccordion">
+                        {% for contact in employee.emergency_contacts.all %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#emergency{{ forloop.counter }}">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-user-circle me-2"></i>
+                                        <div>
+                                            <div class="fw-bold">{{ contact.name }}</div>
+                                            <small class="text-muted">{{ contact.relationship }}</small>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="emergency{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#emergencyContactAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Contact Number</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-phone me-2 text-primary"></i>
+                                                    {{ contact.phone }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Email Address</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-envelope me-2 text-primary"></i>
+                                                    {{ contact.email }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Address</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-map-marker-alt me-2 text-primary"></i>
+                                                    {{ contact.address }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-user-slash fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No emergency contacts found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experience Section -->
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="card-title mb-0">
+                        <i class="fas fa-briefcase me-2"></i>Work Experience
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="accordion" id="experienceAccordion">
+                        {% for experience in employee.experiences.all %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#experience{{ forloop.counter }}">
+                                    <div class="d-flex align-items-center">
+                                        <i class="fas fa-briefcase me-2"></i>
+                                        <div>
+                                            <div class="fw-bold">{{ experience.company }}</div>
+                                            <small class="text-muted">{{ experience.role }}</small>
+                                        </div>
+                                    </div>
+                                </button>
+                            </h2>
+                            <div id="experience{{ forloop.counter }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" data-bs-parent="#experienceAccordion">
+                                <div class="accordion-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Company</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-building me-2 text-primary"></i>
+                                                    {{ experience.company }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Role/Position</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-user-tie me-2 text-primary"></i>
+                                                    {{ experience.role }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="mb-3">
+                                                <label class="form-label text-muted mb-1">Year</label>
+                                                <p class="mb-0">
+                                                    <i class="fas fa-calendar-alt me-2 text-primary"></i>
+                                                    {{ experience.year }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% empty %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-briefcase fa-2x text-muted mb-3"></i>
+                            <p class="text-muted mb-0">No experience records found.</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Employee Modal -->
+<div class="modal fade" id="editEmployeeModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'edit_employee' employee.id %}" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <!-- Add your form fields here -->
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Employee Modal -->
+<div class="modal fade" id="deleteEmployeeModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Employee</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this employee?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'delete_employee' employee.id %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.accordion-button:not(.collapsed) {
+    background-color: #f8f9fa;
+    color: #0d6efd;
+}
+.accordion-button:focus {
+    box-shadow: none;
+}
+.accordion-item {
+    border: 1px solid rgba(0,0,0,.125);
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %} 

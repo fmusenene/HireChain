@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+{% block title %}Performance Appraisal{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Performance Appraisal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: #f4f4f9;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 12px;
+      text-align: left;
+    }
+    th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .add-button {
+      float: right;
+      margin-bottom: 20px;
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    .add-button:hover {
+      background-color: #45a049;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.5);
+    }
+    .modal-content {
+      background-color: #fff;
+      margin: 10% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 50%;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+    .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .close:hover {
+      color: black;
+      cursor: pointer;
+    }
+    .form-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 15px;
+    }
+    .form-row label {
+      flex: 1;
+      margin-right: 10px;
+      font-weight: bold;
+      color: #333;
+    }
+    .form-row input, .form-row select {
+      flex: 2;
+      padding: 8px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    .competency-table {
+      width: 100%;
+      margin-bottom: 20px;
+    }
+    .competency-table h3 {
+      margin-bottom: 10px;
+      color: #4CAF50;
+    }
+    .competency-table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .competency-table td {
+      background-color: #f9f9f9;
+    }
+    .action-buttons {
+      text-align: right;
+      margin-top: 20px;
+    }
+    .action-buttons button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+    .action-buttons button.cancel {
+      background-color: #ccc;
+      color: #333;
+    }
+    .action-buttons button.cancel:hover {
+      background-color: #bbb;
+    }
+    .action-buttons button.add {
+      background-color: #4CAF50;
+      color: white;
+    }
+    .action-buttons button.add:hover {
+      background-color: #45a049;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 15px;
+    }
+    .button-group button {
+      flex: 1;
+      padding: 10px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .button-group button:hover {
+      background-color: #45a049;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Performance Appraisal</h1>
+  <button class="add-button" onclick="openModal()">Add Appraisal</button>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Designation</th>
+        <th>Department</th>
+        <th>Appraisal Date</th>
+        <th>Status</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>John Doe</td>
+        <td>Software Engineer</td>
+        <td>IT</td>
+        <td>2023-10-01</td>
+        <td>Active</td>
+        <td>
+          <button>Edit</button>
+          <button>Delete</button>
+        </td>
+      </tr>
+      <!-- Add more rows as needed -->
+    </tbody>
+  </table>
+
+  <!-- Modal Form -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Add Appraisal</h2>
+      <div class="form-row">
+        <label for="employee">Employee:</label>
+        <select id="employee" name="employee">
+          <option value="">Select Employee</option>
+          <!-- Employees will be populated dynamically from the database -->
+        </select>
+      </div>
+      <div class="form-row">
+        <label for="appraisal-date">Appraisal Date:</label>
+        <input type="date" id="appraisal-date" name="appraisal-date">
+      </div>
+      <div class="button-group">
+        <button onclick="showTechnical()">Technical</button>
+        <button onclick="showOrganizational()">Organizational</button>
+      </div>
+
+      <!-- Technical Competencies Table -->
+      <div id="technical-table" class="competency-table">
+        <h3>Technical Competencies</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Expected Value</th>
+              <th>Set Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Customer Experience</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Professionalism</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Team Work</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Critical Thinking</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Conflict Management</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Attendance</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Ability To Meet Deadline</td>
+              <td>Intermediate</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <!-- Add more rows as needed -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Organizational Competencies Table -->
+      <div id="organizational-table" class="competency-table" style="display: none;">
+        <h3>Organizational Competencies</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicator</th>
+              <th>Expected Value</th>
+              <th>Set Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Integrity</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Professionalism</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Team Work</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Critical Thinking</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Conflict Management</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Attendance</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <tr>
+              <td>Ability To Meet Deadline</td>
+              <td>Beginner</td>
+              <td>
+                <select>
+                  <option value="none">None</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                  <option value="expert">Expert / Leader</option>
+                </select>
+              </td>
+            </tr>
+            <!-- Add more rows as needed -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="form-row">
+        <label for="status">Status:</label>
+        <select id="status" name="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="action-buttons">
+        <button class="cancel" onclick="closeModal()">Cancel</button>
+        <button class="add" onclick="addAppraisal()">Add Appraisal</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Mock employee database
+    const employees = [
+      { id: 1, name: "John Doe" },
+      { id: 2, name: "Jane Smith" },
+      { id: 3, name: "Michael Brown" }
+    ];
+
+    // Populate the Employee dropdown
+    const employeeDropdown = document.getElementById('employee');
+    employees.forEach(emp => {
+      const option = document.createElement('option');
+      option.value = emp.id;
+      option.textContent = emp.name;
+      employeeDropdown.appendChild(option);
+    });
+
+    function openModal() {
+      document.getElementById('modal').style.display = 'block';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    function showTechnical() {
+      document.getElementById('technical-table').style.display = 'block';
+      document.getElementById('organizational-table').style.display = 'none';
+    }
+
+    function showOrganizational() {
+      document.getElementById('technical-table').style.display = 'none';
+      document.getElementById('organizational-table').style.display = 'block';
+    }
+
+    function addAppraisal() {
+      // Add logic to save the appraisal
+      alert('Appraisal added successfully!');
+      closeModal();
+    }
+  </script>
+</body>
+</html>
+
+{% endblock %}

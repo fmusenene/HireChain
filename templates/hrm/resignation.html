@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% block title %}Resignation{% endblock %}
+{% block content %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resignation List</title>
+  <style>
+    /* General Styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      padding: 0;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      cursor: pointer;
+      border-radius: 5px;
+      transition: 0.3s;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f4f4f4;
+    }
+
+    /* Modal Styling */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background: white;
+      padding: 20px;
+      width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      position: relative;
+    }
+
+    .modal h2 {
+      text-align: center;
+      margin-bottom: 15px;
+    }
+
+    .modal label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+    }
+
+    .modal select, .modal input, .modal textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .modal textarea {
+      resize: none;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 15px;
+    }
+
+    .modal-footer button {
+      border: none;
+      padding: 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .cancel {
+      background-color: #6c757d;
+      color: #fff;
+    }
+
+    .add {
+      background-color: #28a745;
+      color: #fff;
+    }
+
+    .cancel:hover, .add:hover {
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Resignation List</h1>
+    <button onclick="openModal()">Add Resignation</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Resigning Employee</th>
+        <th>Department</th>
+        <th>Reason</th>
+        <th>Notice Date</th>
+        <th>Resignation Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for resignation in resignations %}
+      <tr>
+        <td>{{ resignation.employee.name }}</td>
+        <td>{{ resignation.employee.department }}</td>
+        <td>{{ resignation.reason }}</td>
+        <td>{{ resignation.notice_date }}</td>
+        <td>{{ resignation.resignation_date }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5">No resignations found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal Form for Adding Resignation -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Add Resignation</h2>
+      <form method="post">
+        {% csrf_token %}
+
+        <label for="employee">Resigning Employee</label>
+        <select id="employee" name="employee" required>
+          <option value="">Select Employee</option>
+          {% for employee in employees %}
+            <option value="{{ employee.id }}">{{ employee.name }} ({{ employee.department }})</option>
+          {% endfor %}
+        </select>
+
+        <label for="notice_date">Notice Date</label>
+        <input type="date" id="notice_date" name="notice_date" required>
+
+        <label for="resignation_date">Resignation Date</label>
+        <input type="date" id="resignation_date" name="resignation_date" required>
+
+        <label for="reason">Reason</label>
+        <textarea id="reason" name="reason" rows="3" required></textarea>
+
+        <div class="modal-footer">
+          <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="add">Add Resignation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Function to open the modal
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    // Function to close the modal
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside the content
+    window.onclick = function(event) {
+      var modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+{% endblock %}

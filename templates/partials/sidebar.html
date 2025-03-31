@@ -1,0 +1,672 @@
+{% load static %}
+{% load custom_tags %}
+
+<div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+    <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu"
+        aria-labelledby="sidebarMenuLabel">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="sidebarMenuLabel">HR_PRO</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu"
+                aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 {% is_active 'hrm' %}" aria-current="page" href="{% url 'hrm' %}">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <!-- Projects Section -->
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-left px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                    <span>PROJECTS</span>
+                </h6>
+
+                <!-- Clients Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <i class="fas fa-users"></i>
+                        Clients
+                    </a>
+                </li>
+
+                <!-- Projects Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#projectsSubMenu" data-bs-toggle="collapse" aria-expanded="false">
+                        <i class="fas fa-project-diagram"></i>
+                        Projects
+                    </a>
+                    <div class="collapse" id="projectsSubMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li><a class="nav-link" href="#"><i class="fas fa-list"></i> Projects</a></li>
+                            <li><a class="nav-link" href="#"><i class="fas fa-tasks"></i> Tasks</a></li>
+                            <li><a class="nav-link" href="#"><i class="fas fa-clipboard-list"></i> Task Board</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- HRM Section -->
+                <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                    <span>HRM</span>
+                </h6>
+
+                <!-- Employees Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" data-bs-toggle="collapse" href="#employeesMenu"
+                        role="button" aria-expanded="{% is_menu_active 'employee_list,departments,designations,birthdays,policies' %}" aria-controls="employeesMenu">
+                        <i class="fas fa-user-tie"></i>
+                        Employees
+                    </a>
+                    <div class="collapse {% is_menu_active 'employee_list,departments,designations,birthdays,policies' %}" id="employeesMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li><a class="nav-link {% is_active 'employee_list' %}" href="{% url 'employee_list' %}">
+                                <i class="fas fa-users"></i> Employee List</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'departments' %}" href="{% url 'departments' %}">
+                                <i class="fas fa-building"></i> Departments</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'designations' %}" href="{% url 'designations' %}">
+                                <i class="fas fa-id-badge"></i> Designation</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'birthdays' %}" href="{% url 'birthdays' %}">
+                                <i class="fas fa-birthday-cake"></i> Birthdays</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'policies' %}" href="{% url 'policies' %}">
+                                <i class="fas fa-file-alt"></i> Policies</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Attendance Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" data-bs-toggle="collapse" href="#attendanceMenu"
+                        role="button" aria-expanded="{% is_menu_active 'leave_admin,leave_employee,leave_type,admin_attendance,employee_attendance,timesheets,employee_availability,overtime' %}" aria-controls="attendanceMenu">
+                        <i class="fas fa-clock"></i>
+                        Attendance
+                    </a>
+                    <div class="collapse {% is_menu_active 'leave_admin,leave_employee,leave_type,admin_attendance,employee_attendance,timesheets,employee_availability,overtime' %}" id="attendanceMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li class="nav-item">
+                                <a class="nav-link d-flex align-items-center gap-2" data-bs-toggle="collapse"
+                                    href="#leavesMenu" role="button" aria-expanded="{% is_menu_active 'leave_admin,leave_employee,leave_type' %}" aria-controls="leavesMenu">
+                                    <i class="fas fa-calendar-minus"></i>
+                                    Leaves
+                                </a>
+                                <div class="collapse {% is_menu_active 'leave_admin,leave_employee,leave_type' %}" id="leavesMenu">
+                                    <ul class="nav flex-column ms-3">
+                                        <li><a class="nav-link {% is_active 'leave_admin' %}" href="{% url 'leave_admin' %}">
+                                            <i class="fas fa-user-shield"></i> Leaves (Admin)</a>
+                                        </li>
+                                        <li><a class="nav-link {% is_active 'leave_employee' %}" href="{% url 'leave_employee' %}">
+                                            <i class="fas fa-user"></i> Leaves (Employee)</a>
+                                        </li>
+                                        <li><a class="nav-link {% is_active 'leave_type' %}" href="{% url 'leave_type' %}">
+                                            <i class="fas fa-cog"></i> Leave Settings</a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </li>
+                            <li><a class="nav-link {% is_active 'admin_attendance' %}" href="{% url 'admin_attendance' %}">
+                                <i class="fas fa-clipboard-check"></i> Attendance (Admin)</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'employee_attendance' %}" href="{% url 'employee_attendance' %}">
+                                <i class="fas fa-clipboard-user"></i> Attendance (Employee)</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'timesheets' %}" href="{% url 'timesheets' %}">
+                                <i class="fas fa-calendar-alt"></i> Timesheets</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'employee_availability' %}" href="{% url 'employee_availability' %}">
+                                <i class="fas fa-calendar-check"></i> Shift & Schedule</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'overtime' %}" href="{% url 'overtime' %}">
+                                <i class="fas fa-business-time"></i> Overtime</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Performance Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" data-bs-toggle="collapse"
+                        href="#performanceMenu" role="button" aria-expanded="{% is_menu_active 'performance_indicator,performance_appraisal,goal_type_view' %}" aria-controls="performanceMenu">
+                        <i class="fas fa-chart-line"></i>
+                        Performance
+                    </a>
+                    <div class="collapse {% is_menu_active 'performance_indicator,performance_appraisal,goal_type_view' %}" id="performanceMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li><a class="nav-link {% is_active 'performance_indicator' %}" href="{% url 'performance_indicator' %}">
+                                <i class="fas fa-chart-bar"></i> Performance Indicator</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'performance_appraisal' %}" href="{% url 'performance_appraisal' %}">
+                                <i class="fas fa-star"></i> Performance Appraisal</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'goal_type_view' %}" href="{% url 'goal_type_view' %}">
+                                <i class="fas fa-bullseye"></i> Goal Type</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Training Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" data-bs-toggle="collapse" href="#trainingMenu"
+                        role="button" aria-expanded="{% is_menu_active 'training_list,trainers,training_type' %}" aria-controls="trainingMenu">
+                        <i class="fas fa-graduation-cap"></i>
+                        Training
+                    </a>
+                    <div class="collapse {% is_menu_active 'training_list,trainers,training_type' %}" id="trainingMenu">
+                        <ul class="nav flex-column ms-3">
+                            <li><a class="nav-link {% is_active 'training_list' %}" href="{% url 'training_list' %}">
+                                <i class="fas fa-list-alt"></i> Training List</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'trainers' %}" href="{% url 'trainers' %}">
+                                <i class="fas fa-chalkboard-teacher"></i> Trainers</a>
+                            </li>
+                            <li><a class="nav-link {% is_active 'training_type' %}" href="{% url 'training_type' %}">
+                                <i class="fas fa-book"></i> Training Type</a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Other Menus -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 {% is_active 'holidays' %}" href="{% url 'holidays' %}">
+                        <i class="fas fa-calendar"></i>
+                        Holidays
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 {% is_active 'promotion_list' %}" href="{% url 'promotion_list' %}">
+                        <i class="fas fa-level-up-alt"></i>
+                        Promotion
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 {% is_active 'resignation_list' %}" href="{% url 'resignation_list' %}">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Resignation
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2 {% is_active 'termination_list' %}" href="{% url 'termination_list' %}">
+                        <i class="fas fa-ban"></i>
+                        Termination
+                    </a>
+                </li>
+            </ul>
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                <span>CRM</span>
+                <a class="link-secondary" href="#" aria-label="Add a new report">
+                </a>
+            </h6>
+
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Contacts
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Companies
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Deals
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Leads
+                    </a>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Pipeline
+                    </a>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Analytics
+                    </a>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Activities
+                    </a>
+                </li>
+            </ul>
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                <span>RECRUITMENT</span>
+                <a class="link-secondary" href="#" aria-label="Add a new report">
+                </a>
+            </h6>
+
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="{% url 'recruitment:job_list' %}">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Jobs
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Candidates
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Referrals
+                    </a>
+                </li>
+            </ul>
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                <span>FINANCE & ACCOUNTS</span>
+                <a class="link-secondary" href="#" aria-label="Add a new report">
+                </a>
+            </h6>
+
+            <ul class="nav flex-column mb-auto">
+                <ul class="nav">
+                    <!-- Sales Menu with sub-items -->
+                    <li class="nav-item">
+                        <a class="nav-link d-flex align-items-center gap-2" href="#" id="salesTab"
+                            data-bs-toggle="collapse" data-bs-target="#salesSubMenu" aria-expanded="false"
+                            aria-controls="salesSubMenu">
+                            <svg class="bi">
+                                <use xlink:href="#file-earmark-text" />
+                            </svg>
+                            Sales
+                        </a>
+                        <div class="collapse" id="salesSubMenu">
+                            <ul class="list-unstyled ps-3">
+                                <li><a class="nav-link" href="#">Estimate</a></li>
+                                <li><a class="nav-link" href="#">Invoices</a></li>
+                                <li><a class="nav-link" href="#">Payments</a></li>
+                                <li><a class="nav-link" href="#">Expenses</a></li>
+                                <li><a class="nav-link" href="#">Provident Funds</a></li>
+                                <li><a class="nav-link" href="#">Taxes</a></li>
+                            </ul>
+                        </div>
+                    </li>
+                </ul>
+
+                <!-- Accounting Menu with sub-items -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="accountingTab"
+                        data-bs-toggle="collapse" data-bs-target="#accountingSubMenu" aria-expanded="false"
+                        aria-controls="accountingSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Accounting
+                    </a>
+                    <div class="collapse" id="accountingSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Categories</a></li>
+                            <li><a class="nav-link" href="#">Budgets</a></li>
+                            <li><a class="nav-link" href="#">Budget Expenses</a></li>
+                            <li><a class="nav-link" href="#">Budget Revenues</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Payroll Menu with sub-items -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="payrollTab"
+                        data-bs-toggle="collapse" data-bs-target="#payrollSubMenu" aria-expanded="false"
+                        aria-controls="payrollSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Payroll
+                    </a>
+                    <div class="collapse" id="payrollSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Employee Salary</a></li>
+                            <li><a class="nav-link" href="#">Payslip</a></li>
+                            <li><a class="nav-link" href="#">Payroll Items</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+            </ul>
+
+
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                <span>ADMINISTRATION</span>
+                <a class="link-secondary" href="#" aria-label="Add a new report">
+                </a>
+            </h6>
+
+            <ul class="nav flex-column mb-auto">
+                <!-- Assets Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="assetsTab"
+                        data-bs-toggle="collapse" data-bs-target="#assetsSubMenu" aria-expanded="false"
+                        aria-controls="assetsSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Assets
+                    </a>
+                    <div class="collapse" id="assetsSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Assets</a></li>
+                            <li><a class="nav-link" href="#">Assets Categories</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Help & Support Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="helpSupportTab"
+                        data-bs-toggle="collapse" data-bs-target="#helpSupportSubMenu" aria-expanded="false"
+                        aria-controls="helpSupportSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Help & Support
+                    </a>
+                    <div class="collapse" id="helpSupportSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Knowledge Base</a></li>
+                            <li><a class="nav-link" href="#">Activities</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- User Management Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="userManagementTab"
+                        data-bs-toggle="collapse" data-bs-target="#userManagementSubMenu" aria-expanded="false"
+                        aria-controls="userManagementSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        User Management
+                    </a>
+                    <div class="collapse" id="userManagementSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">User</a></li>
+                            <li><a class="nav-link" href="#">Roles & Permissions</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Reports Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="reportsTab"
+                        data-bs-toggle="collapse" data-bs-target="#reportsSubMenu" aria-expanded="false"
+                        aria-controls="reportsSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Reports
+                    </a>
+                    <div class="collapse" id="reportsSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Expenses Report</a></li>
+                            <li><a class="nav-link" href="#">Invoices Report</a></li>
+                            <li><a class="nav-link" href="#">Payment Report</a></li>
+                            <li><a class="nav-link" href="#">Project Report</a></li>
+                            <li><a class="nav-link" href="#">Task Report</a></li>
+                            <li><a class="nav-link" href="#">User Report</a></li>
+                            <li><a class="nav-link" href="#">Employee Report</a></li>
+                            <li><a class="nav-link" href="#">Payslip Report</a></li>
+                            <li><a class="nav-link" href="#">Attendance Report</a></li>
+                            <li><a class="nav-link" href="#">Leave Report</a></li>
+                            <li><a class="nav-link" href="#">Daily Report</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Settings Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="settingsTab"
+                        data-bs-toggle="collapse" data-bs-target="#settingsSubMenu" aria-expanded="false"
+                        aria-controls="settingsSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Settings
+                    </a>
+                    <div class="collapse" id="settingsSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <!-- General Settings -->
+                            <li>
+                                <a class="nav-link d-flex justify-content-between align-items-center" href="#"
+                                    data-bs-toggle="collapse" data-bs-target="#generalSettingsSubMenu"
+                                    aria-expanded="false" aria-controls="generalSettingsSubMenu">
+                                    General Settings
+                                </a>
+                                <div class="collapse" id="generalSettingsSubMenu">
+                                    <ul class="list-unstyled ps-3">
+                                        <li><a class="nav-link" href="#">Profile</a></li>
+                                        <li><a class="nav-link" href="#">Security</a></li>
+                                        <li><a class="nav-link" href="#">Notifications</a></li>
+                                        <li><a class="nav-link" href="#">App Settings</a></li>
+                                        <ul class="ps-3">
+                                            <li><a class="nav-link" href="#">Salary Settings</a></li>
+                                            <li><a class="nav-link" href="#">Approval Settings</a></li>
+                                            <li><a class="nav-link" href="#">Invoice Settings</a></li>
+                                            <li><a class="nav-link" href="#">Leave Type</a></li>
+                                            <li><a class="nav-link" href="#">Custom Fields</a></li>
+                                        </ul>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <!-- System Settings -->
+                            <li>
+                                <a class="nav-link d-flex justify-content-between align-items-center" href="#"
+                                    data-bs-toggle="collapse" data-bs-target="#systemSettingsSubMenu"
+                                    aria-expanded="false" aria-controls="systemSettingsSubMenu">
+                                    System Settings
+                                </a>
+                                <div class="collapse" id="systemSettingsSubMenu">
+                                    <ul class="list-unstyled ps-3">
+                                        <li><a class="nav-link" href="#">Email Settings</a></li>
+                                        <li><a class="nav-link" href="#">Email Templates</a></li>
+                                        <li><a class="nav-link" href="#">SMS Settings</a></li>
+                                        <li><a class="nav-link" href="#">OTP</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+
+                            <!-- Financial Settings -->
+                            <li>
+                                <a class="nav-link d-flex justify-content-between align-items-center" href="#"
+                                    data-bs-toggle="collapse" data-bs-target="#financialSettingsSubMenu"
+                                    aria-expanded="false" aria-controls="financialSettingsSubMenu">
+                                    Financial Settings
+                                </a>
+                                <div class="collapse" id="financialSettingsSubMenu">
+                                    <ul class="list-unstyled ps-3">
+                                        <li><a class="nav-link" href="#">Payment Gateways</a></li>
+                                        <li><a class="nav-link" href="#">Tax Rate</a></li>
+                                        <li><a class="nav-link" href="#">Currencies</a></li>
+                                    </ul>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+
+            <h6
+                class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-body-secondary text-uppercase">
+                <span>APPLICATION</span>
+                <a class="link-secondary" href="#" aria-label="Add a new report">
+                </a>
+            </h6>
+
+            <ul class="nav flex-column mb-auto">
+                <!-- Chats Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Chats
+                    </a>
+                </li>
+
+                <!-- Calls Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="callsTab" data-bs-toggle="collapse"
+                        data-bs-target="#callsSubMenu" aria-expanded="false" aria-controls="callsSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Calls
+                    </a>
+                    <div class="collapse" id="callsSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Voice</a></li>
+                            <li><a class="nav-link" href="#">Video</a></li>
+                            <li><a class="nav-link" href="#">Outgoing</a></li>
+                            <li><a class="nav-link" href="#">Incoming</a></li>
+                            <li><a class="nav-link" href="#">History</a></li>
+                        </ul>
+                    </div>
+                </li>
+
+                <!-- Calendar Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Calendar
+                    </a>
+                </li>
+
+                <!-- Email Menu -->
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#" id="emailTab" data-bs-toggle="collapse"
+                        data-bs-target="#emailSubMenu" aria-expanded="false" aria-controls="emailSubMenu">
+                        <svg class="bi">
+                            <use xlink:href="#file-earmark-text" />
+                        </svg>
+                        Email
+                    </a>
+                    <div class="collapse" id="emailSubMenu">
+                        <ul class="list-unstyled ps-3">
+                            <li><a class="nav-link" href="#">Inbox</a></li>
+                            <li><a class="nav-link" href="#">Starred</a></li>
+                            <li><a class="nav-link" href="#">Sent</a></li>
+                            <li><a class="nav-link" href="#">Drafts</a></li>
+                            <li><a class="nav-link" href="#">Deleted</a></li>
+                            <li><a class="nav-link" href="#">Spam</a></li>
+                            <li><a class="nav-link" href="#">Important</a></li>
+                            <li><a class="nav-link" href="#">All Events</a></li>
+                        </ul>
+                    </div>
+                </li>
+            </ul>
+
+
+            <hr class="my-3">
+
+            <ul class="nav flex-column mb-auto">
+                <li class="nav-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="#">
+                        <svg class="bi">
+                            <use xlink:href="#gear-wide-connected" />
+                        </svg>
+                        Settings
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <form action="{% url 'logout' %}" method="POST" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-link d-flex align-items-center gap-2 w-100 border-0 bg-transparent">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </form>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<style>
+.nav-link {
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+}
+
+.nav-link.active {
+    color: #007bff;
+    background-color: rgba(0, 123, 255, 0.1);
+    font-weight: 500;
+}
+
+.nav-link i {
+    width: 20px;
+    text-align: center;
+    margin-right: 8px;
+}
+
+.sidebar-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.collapse {
+    transition: all 0.3s ease;
+}
+
+.collapse.show {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.nav-link[aria-expanded="true"] {
+    color: #007bff;
+}
+</style>

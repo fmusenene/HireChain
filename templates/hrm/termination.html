@@ -1,0 +1,242 @@
+{% extends 'base.html' %}
+{% block title %}Trainers{% endblock %}
+{% block content %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Termination List</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: white;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    table th, table td {
+      padding: 12px;
+      border: 1px solid #ddd;
+      text-align: left;
+    }
+
+    table th {
+      background-color: #f8f9fa;
+    }
+
+    table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    table tr:hover {
+      background-color: #ddd;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      width: 400px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-content h2 {
+      margin-top: 0;
+    }
+
+    .modal-content label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    .modal-content input,
+    .modal-content select,
+    .modal-content textarea {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .modal-footer button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .modal-footer .cancel {
+      background-color: #6c757d;
+      color: white;
+    }
+
+    .modal-footer .cancel:hover {
+      background-color: #5a6268;
+    }
+
+    .modal-footer .add {
+      background-color: #28a745;
+      color: white;
+    }
+
+    .modal-footer .add:hover {
+      background-color: #218838;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>Termination List</h1>
+    <button onclick="openModal()">Add Termination</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Terminated Employee</th>
+        <th>Department</th>
+        <th>Termination Type</th>
+        <th>Notice Date</th>
+        <th>Reason</th>
+        <th>Resignation Date</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for termination in terminations %}
+      <tr>
+        <td>{{ termination.employee.name }}</td>
+        <td>{{ termination.employee.department }}</td>
+        <td>{{ termination.get_termination_type_display }}</td>
+        <td>{{ termination.notice_date }}</td>
+        <td>{{ termination.reason }}</td>
+        <td>{{ termination.resignation_date }}</td>
+        <td>
+          <button>Edit</button>
+          <button>Delete</button>
+        </td>
+      </tr>
+      {% empty %}
+      <tr>
+        <td colspan="7" style="text-align: center;">No termination records found.</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <!-- Modal Form for Adding Termination -->
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h2>Add Termination</h2>
+      <form method="post">
+        {% csrf_token %}
+        
+        <label for="terminatedEmployee">Terminated Employee</label>
+        <select id="terminatedEmployee" name="employee" required>
+          <option value="">Select Employee</option>
+          {% for employee in employees %}
+          <option value="{{ employee.id }}">{{ employee.name }} ({{ employee.department }})</option>
+          {% endfor %}
+        </select>
+
+        <label for="terminationType">Termination Type</label>
+        <select id="terminationType" name="termination_type" required>
+          <option value="">Select Termination Type</option>
+          <option value="voluntary">Voluntary</option>
+          <option value="involuntary">Involuntary</option>
+        </select>
+
+        <label for="noticeDate">Notice Date</label>
+        <input type="date" id="noticeDate" name="notice_date" required>
+
+        <label for="reason">Reason</label>
+        <textarea id="reason" name="reason" rows="3" required></textarea>
+
+        <label for="resignationDate">Resignation Date</label>
+        <input type="date" id="resignationDate" name="resignation_date" required>
+
+        <div class="modal-footer">
+          <button type="button" class="cancel" onclick="closeModal()">Cancel</button>
+          <button type="submit" class="add">Add Termination</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    function openModal() {
+      document.getElementById('modal').style.display = 'flex';
+    }
+
+    function closeModal() {
+      document.getElementById('modal').style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      const modal = document.getElementById('modal');
+      if (event.target === modal) {
+        closeModal();
+      }
+    };
+  </script>
+
+</body>
+</html>
+
+
+{% endblock %}
