@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Header with breadcrumbs -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-2">Candidates List</h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/"><i class="bi bi-house"></i></a></li>
+                    <li class="breadcrumb-item">Administration</li>
+                    <li class="breadcrumb-item active">Candidates List</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <button class="btn btn-outline-secondary me-2"><i class="bi bi-grid"></i></button>
+            <div class="dropdown d-inline-block">
+                <button class="btn btn-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    <i class="bi bi-download me-1"></i> Export
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="?export=csv">Export as CSV</a></li>
+                    <li><a class="dropdown-item" href="?export=excel">Export as Excel</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main card -->
+    <div class="card">
+        <div class="card-header bg-white">
+            <form method="get" id="filterForm">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">Candidates List</h5>
+                    </div>
+                    <div class="col-auto">
+                        <div class="d-flex gap-2">
+                            <select class="form-select" name="date_range" onchange="this.form.submit()">
+                                <option value="">All Time</option>
+                                <option value="last_7_days" {% if selected_date_range == 'last_7_days' %}selected{% endif %}>Last 7 Days</option>
+                                <option value="last_30_days" {% if selected_date_range == 'last_30_days' %}selected{% endif %}>Last 30 Days</option>
+                            </select>
+                            <select class="form-select" name="role" onchange="this.form.submit()">
+                                <option value="all">All Roles</option>
+                                {% for role in all_roles %}
+                                <option value="{{ role }}" {% if selected_role == role %}selected{% endif %}>{{ role }}</option>
+                                {% endfor %}
+                            </select>
+                            <select class="form-select" name="status" onchange="this.form.submit()">
+                                <option value="all">All Status</option>
+                                {% for status in all_statuses %}
+                                <option value="{{ status }}" {% if selected_status == status %}selected{% endif %}>{{ status }}</option>
+                                {% endfor %}
+                            </select>
+                            <select class="form-select" name="sort_by" onchange="this.form.submit()">
+                                <option value="-applied_date" {% if sort_by == '-applied_date' %}selected{% endif %}>Sort By: Latest First</option>
+                                <option value="applied_date" {% if sort_by == 'applied_date' %}selected{% endif %}>Sort By: Oldest First</option>
+                                <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Sort By: Name</option>
+                                <option value="status" {% if sort_by == 'status' %}selected{% endif %}>Sort By: Status</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center">
+                    <span class="me-2">Row Per Page</span>
+                    <select class="form-select form-select-sm" name="rows_per_page" style="width: 70px;" form="filterForm" onchange="this.form.submit()">
+                        <option value="10" {% if rows_per_page == 10 %}selected{% endif %}>10</option>
+                        <option value="25" {% if rows_per_page == 25 %}selected{% endif %}>25</option>
+                        <option value="50" {% if rows_per_page == 50 %}selected{% endif %}>50</option>
+                    </select>
+                    <span class="ms-2">Entries</span>
+                </div>
+                <div class="col-3">
+                    <form method="get" class="d-flex">
+                        <input type="search" class="form-control" name="search" placeholder="Search..." value="{{ search_query }}">
+                        <button type="submit" class="btn btn-primary ms-2">Search</button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th width="40">
+                                <input type="checkbox" class="form-check-input select-all">
+                            </th>
+                            <th>Cand ID</th>
+                            <th>Candidate</th>
+                            <th>Applied Role</th>
+                            <th>Phone</th>
+                            <th>Applied Date</th>
+                            <th>Resume</th>
+                            <th>Status</th>
+                            <th width="40"></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for candidate in candidates %}
+                        <tr>
+                            <td>
+                                <input type="checkbox" class="form-check-input candidate-checkbox" value="{{ candidate.id }}">
+                            </td>
+                            <td>{{ candidate.cand_id }}</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-circle bg-primary me-2">
+                                        {{ candidate.name|make_list|first|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-medium">{{ candidate.name }}</div>
+                                        <div class="text-muted small">{{ candidate.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>{{ candidate.applied_role }}</td>
+                            <td>{{ candidate.phone }}</td>
+                            <td>{{ candidate.applied_date|date:"d M Y" }}</td>
+                            <td>
+                                {% if candidate.resume %}
+                                <a href="{{ candidate.resume.url }}" class="btn btn-sm btn-light">
+                                    <i class="bi bi-file-earmark-text me-1"></i>
+                                    <i class="bi bi-download"></i>
+                                </a>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge rounded-pill bg-light text-primary">
+                                    {{ candidate.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-light delete-candidate" data-id="{{ candidate.id }}">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="9" class="text-center py-4 text-muted">
+                                No candidates found
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {% if candidates.has_other_pages %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if candidates.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ candidates.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_date_range %}&date_range={{ selected_date_range }}{% endif %}&rows_per_page={{ rows_per_page }}&sort_by={{ sort_by }}">&laquo;</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in candidates.paginator.page_range %}
+                    <li class="page-item {% if candidates.number == num %}active{% endif %}">
+                        <a class="page-link" href="?page={{ num }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_date_range %}&date_range={{ selected_date_range }}{% endif %}&rows_per_page={{ rows_per_page }}&sort_by={{ sort_by }}">{{ num }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if candidates.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ candidates.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if selected_role %}&role={{ selected_role }}{% endif %}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if selected_date_range %}&date_range={{ selected_date_range }}{% endif %}&rows_per_page={{ rows_per_page }}&sort_by={{ sort_by }}">&raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 500;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle select all checkbox
+    const selectAllCheckbox = document.querySelector('.select-all');
+    const candidateCheckboxes = document.querySelectorAll('.candidate-checkbox');
+
+    selectAllCheckbox.addEventListener('change', function() {
+        candidateCheckboxes.forEach(checkbox => {
+            checkbox.checked = this.checked;
+        });
+    });
+
+    // Handle delete buttons
+    const deleteButtons = document.querySelectorAll('.delete-candidate');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            if (confirm('Are you sure you want to delete this candidate?')) {
+                const candidateId = this.dataset.id;
+                // Add your delete logic here
+            }
+        });
+    });
+});
+</script>
+{% endblock %} 

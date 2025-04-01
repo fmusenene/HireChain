@@ -64,12 +64,16 @@ class EmployeeForm(forms.ModelForm):
 class LeaveTypeForm(forms.ModelForm):
     class Meta:
         model = LeaveType
-        fields = ['name', 'description', 'default_days']
+        fields = ['name', 'description']
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
+        }
 
     def clean_name(self):
         name = self.cleaned_data.get('name')
-        if LeaveType.objects.filter(name=name).exists():
-            raise forms.ValidationError("This leave type already exists.")
+        if not name:
+            raise forms.ValidationError("Name is required")
         return name
 
 

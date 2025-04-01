@@ -27,10 +27,64 @@ from django.db.models import Q
 
 
 def home(request):
-    designations = Designation.objects.all()
-    departments = Department.objects.all()
-    employee_count = Employee.objects.count()  # Get the number of employees
-    return render(request, 'hrm/home.html', {'employee_count': employee_count})
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    # Get current date and time
+    today = timezone.now().date()
+    current_time = timezone.now()
+    
+    # Get employee statistics
+    total_employees = Employee.objects.count()
+    present_count = Attendance.objects.filter(attendance_date=today, status='present').count()
+    on_leave_count = Leave.objects.filter(from_date__lte=today, to_date__gte=today, status='approved').count()
+    
+    # Get pending tasks count (placeholder for now)
+    pending_tasks_count = 0  # We'll implement this later when we have the Task model
+    
+    # Get recent activities (placeholder for now)
+    recent_activities = []  # We'll implement this later when we have the Activity model
+    
+    # Get upcoming events (holidays, birthdays, etc.)
+    upcoming_events = []
+    
+    # Add upcoming holidays
+    upcoming_holidays = Holiday.objects.filter(date__gte=today).order_by('date')[:3]
+    for holiday in upcoming_holidays:
+        upcoming_events.append({
+            'title': holiday.title,
+            'date': holiday.date,
+            'type': 'holiday'
+        })
+    
+    # Add upcoming birthdays
+    upcoming_birthdays = Employee.objects.filter(
+        date_of_birth__month=today.month,
+        date_of_birth__day__gte=today.day
+    ).order_by('date_of_birth__day')[:3]
+    
+    for employee in upcoming_birthdays:
+        upcoming_events.append({
+            'title': f"{employee.name}'s Birthday",
+            'date': employee.date_of_birth.replace(year=today.year),
+            'type': 'birthday'
+        })
+    
+    # Sort events by date
+    upcoming_events.sort(key=lambda x: x['date'])
+    
+    context = {
+        'today': today,
+        'current_time': current_time,
+        'total_employees': total_employees,
+        'present_count': present_count,
+        'on_leave_count': on_leave_count,
+        'pending_tasks_count': pending_tasks_count,
+        'recent_activities': recent_activities,
+        'upcoming_events': upcoming_events[:5],  # Limit to 5 events
+    }
+    
+    return render(request, 'hrm/dashboard.html', context)
 
 
 def generate_sequential_employee_id():
@@ -457,7 +511,7 @@ def leave_type(request, id=None):
                 leave_type = LeaveType.objects.get(id=id)
                 leave_type.name = request.POST.get('name')
                 leave_type.description = request.POST.get('description')
-                leave_type.default_days = request.POST.get('default_days')
+                leave_type.days_allowed = request.POST.get('days_allowed')
                 leave_type.save()
                 messages.success(request, 'Leave type updated successfully.')
             except LeaveType.DoesNotExist:
@@ -1261,7 +1315,7 @@ def leave_employee(request):
                 from_date=from_date,
                 to_date=to_date,
                 no_of_days=no_of_days,
-                remaining_days=leave_type.default_days - int(no_of_days),
+                remaining_days=leave_type.days_allowed - int(no_of_days),  # Using days_allowed instead of default_days
                 reason=reason,
                 status='pending'
             )
@@ -1287,7 +1341,7 @@ def leave_employee(request):
         total_days_taken = sum(leave.no_of_days for leave in approved_leaves)
         
         # Calculate remaining days
-        remaining_days = max(0, leave_type.default_days - total_days_taken)
+        remaining_days = max(0, leave_type.days_allowed - total_days_taken)  # Using days_allowed instead of default_days
         
         leave_stats[leave_type.name.lower()] = {
             'total': total_days_taken,
@@ -1315,3 +1369,38 @@ def employee_details(request, employee_id):
         'employee': employee,
     }
     return render(request, 'hrm/employee_details.html', context)
+
+def dashboard(request):
+    if not request.user.is_authenticated:
+        return redirect('login')
+    
+    # Get current user's employee record
+    try:
+        employee = Employee.objects.get(user=request.user)
+    except Employee.DoesNotExist:
+        employee = None
+    
+    # Get today's date
+    today = timezone.now().date()
+    
+    # Get attendance statistics
+    total_employees = Employee.objects.count()
+    present_employees = Attendance.objects.filter(date=today, status='present').count()
+    total_leaves = Leave.objects.filter(from_date__lte=today, to_date__gte=today, status='approved').count()
+    
+    # Get pending tasks (assuming you have a Task model)
+    pending_tasks = Task.objects.filter(assigned_to=employee, status='pending').count() if employee else 0
+    
+    # Get recent activities
+    recent_activities = Activity.objects.filter(user=request.user).order_by('-timestamp')[:5]
+    
+    context = {
+        'employee': employee,
+        'total_employees': total_employees,
+        'present_employees': present_employees,
+        'total_leaves': total_leaves,
+        'pending_tasks': pending_tasks,
+        'recent_activities': recent_activities,
+    }
+    
+    return render(request, 'dashboard.html', context)

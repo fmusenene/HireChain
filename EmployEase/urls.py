@@ -27,6 +27,7 @@ urlpatterns = [
     path('', include('hrm.urls')),
     path('authentication/', include('authentication.urls')),
     path('recruitment/', include('recruitment.urls')),
+    path('dashboard/', include('hrm.urls')),
     # Override the default auth URLs to use our custom ones
     path('accounts/login/', views.login_view, name='login'),
     path('accounts/logout/', views.logout_view, name='logout'),
