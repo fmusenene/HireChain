@@ -1,231 +1,264 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Get all form elements
+    // Get form elements
     const form = document.getElementById('registerForm');
-    const fullName = document.getElementById('fullNameField');
-    const email = document.getElementById('emailfield');
-    const password = document.getElementById('passwordField');
-    const confirmPassword = document.getElementById('PasswordField2');
+    const submitButton = document.getElementById('registerBtn');
+    const companyName = document.getElementById('company_name');
+    const fullName = document.getElementById('full_name');
+    const email = document.getElementById('email');
+    const phone = document.getElementById('phone');
+    const password = document.getElementById('password');
+    const password2 = document.getElementById('password2');
     const terms = document.getElementById('terms');
-    const registerBtn = document.getElementById('registerBtn');
 
     // Validation state object
-    let validationState = {
-        fullName: false,
+    const validationState = {
+        company_name: false,
+        full_name: false,
         email: false,
+        phone: false,
         password: false,
-        confirmPassword: false,
+        password2: false,
         terms: false
     };
 
-    // Disable button initially
-    registerBtn.disabled = true;
+    // Validation functions
+    const validators = {
+        company_name: (value) => {
+            return value.length >= 2;
+        },
+        full_name: (value) => {
+            return value.length >= 2 && /^[a-zA-Z\s]*$/.test(value);
+        },
+        email: (value) => {
+            return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(value);
+        },
+        phone: (value) => {
+            return /^\+?[\d\s-]{10,}$/.test(value);
+        },
+        password: (value) => {
+            return value.length >= 8 &&
+                   /[A-Z]/.test(value) &&
+                   /[a-z]/.test(value) &&
+                   /[0-9]/.test(value) &&
+                   /[^A-Za-z0-9]/.test(value);
+        },
+        password2: (value) => {
+            return value === password.value;
+        },
+        terms: (checked) => {
+            return checked;
+        }
+    };
 
-    // Function to check if all validations pass
-    function checkAllValidations() {
-        const allValid = Object.values(validationState).every(value => value === true);
-        registerBtn.disabled = !allValid;
-        return allValid;
+    // Error messages
+    const errorMessages = {
+        company_name: 'Company name must be at least 2 characters long',
+        full_name: 'Full name must be at least 2 characters and contain only letters and spaces',
+        email: 'Please enter a valid email address',
+        phone: 'Please enter a valid phone number (at least 10 digits)',
+        password: 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character',
+        password2: 'Passwords do not match',
+        terms: 'You must accept the terms and conditions'
+    };
+
+    // Function to validate a field
+    function validateField(fieldName, element) {
+        const value = element.type === 'checkbox' ? element.checked : element.value.trim();
+        const isValid = validators[fieldName](value);
+        const feedbackElement = document.getElementById(fieldName + 'Feedback');
+
+        if (isValid) {
+            element.classList.remove('is-invalid');
+            element.classList.add('is-valid');
+            if (feedbackElement) {
+                feedbackElement.textContent = '';
+            }
+            validationState[fieldName] = true;
+        } else {
+            element.classList.add('is-invalid');
+            element.classList.remove('is-valid');
+            if (feedbackElement) {
+                feedbackElement.textContent = errorMessages[fieldName];
+            }
+            validationState[fieldName] = false;
+        }
+
+        updateSubmitButton();
     }
 
-    // Full Name Validation
-    fullName.addEventListener('input', function() {
-        const value = this.value.trim();
-        const nameRegex = /^[a-zA-Z\s]{3,}$/;
-        const isValid = nameRegex.test(value);
+    // Function to update submit button state
+    function updateSubmitButton() {
+        const isFormValid = Object.values(validationState).every(state => state === true);
+        submitButton.disabled = !isFormValid;
+    }
 
-        this.classList.remove('is-valid', 'is-invalid');
-        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+    // Add event listeners to all fields
+    if (companyName) {
+        companyName.addEventListener('input', () => validateField('company_name', companyName));
+        companyName.addEventListener('blur', () => validateField('company_name', companyName));
+    }
 
-        const feedback = document.querySelector('.fullNameFeedbackArea');
-        if (!isValid) {
-            feedback.textContent = value.length < 3 ? 
-                'Name must be at least 3 characters long' : 
-                'Name can only contain letters and spaces';
-            feedback.style.display = 'block';
-        } else {
-            feedback.style.display = 'none';
-        }
+    if (fullName) {
+        fullName.addEventListener('input', () => validateField('full_name', fullName));
+        fullName.addEventListener('blur', () => validateField('full_name', fullName));
+    }
 
-        validationState.fullName = isValid;
-        checkAllValidations();
-    });
+    if (email) {
+        email.addEventListener('input', () => validateField('email', email));
+        email.addEventListener('blur', () => validateField('email', email));
+    }
 
-    // Email Validation
-    email.addEventListener('input', function() {
-        const value = this.value.trim();
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        const isValid = emailRegex.test(value);
+    if (phone) {
+        phone.addEventListener('input', () => validateField('phone', phone));
+        phone.addEventListener('blur', () => validateField('phone', phone));
+    }
 
-        this.classList.remove('is-valid', 'is-invalid');
-        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+    if (password) {
+        password.addEventListener('input', () => {
+            validateField('password', password);
+            if (password2.value) {
+                validateField('password2', password2);
+            }
+        });
+        password.addEventListener('blur', () => validateField('password', password));
+    }
 
-        const feedback = document.querySelector('.emailFeeBackArea');
-        if (!isValid) {
-            feedback.textContent = 'Please enter a valid email address';
-            feedback.style.display = 'block';
-        } else {
-            feedback.style.display = 'none';
-        }
+    if (password2) {
+        password2.addEventListener('input', () => validateField('password2', password2));
+        password2.addEventListener('blur', () => validateField('password2', password2));
+    }
 
-        validationState.email = isValid;
-        checkAllValidations();
-    });
+    if (terms) {
+        terms.addEventListener('change', () => validateField('terms', terms));
+    }
 
-    // Password Validation
-    password.addEventListener('input', function() {
-        const value = this.value.trim();
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-        const isValid = passwordRegex.test(value);
-
-        this.classList.remove('is-valid', 'is-invalid');
-        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
-
-        const feedback = document.querySelector('.passwordMessageArea');
-        if (!isValid) {
-            feedback.textContent = 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character';
-            feedback.style.display = 'block';
-        } else {
-            feedback.style.display = 'none';
-        }
-
-        validationState.password = isValid;
-        
-        // Revalidate confirm password if it has a value
-        if (confirmPassword.value.trim() !== '') {
-            confirmPassword.dispatchEvent(new Event('input'));
-        }
-        
-        checkAllValidations();
-    });
-
-    // Confirm Password Validation
-    confirmPassword.addEventListener('input', function() {
-        const value = this.value.trim();
-        const isValid = value === password.value.trim() && value !== '';
-
-        this.classList.remove('is-valid', 'is-invalid');
-        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
-
-        const feedback = this.nextElementSibling.nextElementSibling;
-        if (!isValid) {
-            feedback.textContent = value === '' ? 
-                'Please confirm your password' : 
-                'Passwords do not match';
-            feedback.style.display = 'block';
-        } else {
-            feedback.style.display = 'none';
-        }
-
-        validationState.confirmPassword = isValid;
-        checkAllValidations();
-    });
-
-    // Terms Checkbox Validation
-    terms.addEventListener('change', function() {
-        validationState.terms = this.checked;
-        checkAllValidations();
-    });
-
-    // Password Visibility Toggle
-    document.querySelectorAll('.password-toggle').forEach(toggle => {
-        toggle.addEventListener('click', function() {
-            const input = this.previousElementSibling;
+    // Password toggle functionality
+    document.querySelectorAll('.btn-toggle-password').forEach(button => {
+        button.addEventListener('click', function() {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
             const icon = this.querySelector('i');
-            
-            if (input.type === 'password') {
-                input.type = 'text';
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
                 icon.classList.remove('fa-eye');
                 icon.classList.add('fa-eye-slash');
             } else {
-                input.type = 'password';
+                passwordInput.type = 'password';
                 icon.classList.remove('fa-eye-slash');
                 icon.classList.add('fa-eye');
             }
         });
     });
 
-    // Form Submission
-    form.addEventListener('submit', function(e) {
-        e.preventDefault();
+    // Form submission
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-        // Trigger validation on all fields
-        fullName.dispatchEvent(new Event('input'));
-        email.dispatchEvent(new Event('input'));
-        password.dispatchEvent(new Event('input'));
-        confirmPassword.dispatchEvent(new Event('input'));
+            // Validate all fields before submission
+            validateField('company_name', companyName);
+            validateField('full_name', fullName);
+            validateField('email', email);
+            validateField('phone', phone);
+            validateField('password', password);
+            validateField('password2', password2);
+            validateField('terms', terms);
 
-        // Only submit if all validations pass
-        if (checkAllValidations()) {
-            this.submit();
+            const isFormValid = Object.values(validationState).every(state => state === true);
+            if (isFormValid) {
+                this.submit();
+            }
+        });
+    }
+
+    // Login form validation
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginBtn');
+    const loginEmail = document.getElementById('login-email');
+    const loginPassword = document.getElementById('login-password');
+    const emailFeedback = document.querySelector('.emailFeeBackArea');
+    const passwordFeedback = document.querySelector('.passwordMessageArea');
+
+    if (loginForm) {
+        const loginFields = {
+            email: {
+                element: loginEmail,
+                feedback: emailFeedback,
+                validate: (value) => {
+                    if (!value) return 'Email is required';
+                    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+                    if (!emailRegex.test(value)) return 'Please enter a valid email address';
+                    return '';
+                }
+            },
+            password: {
+                element: loginPassword,
+                feedback: passwordFeedback,
+                validate: (value) => {
+                    if (!value) return 'Password is required';
+                    return '';
+                }
+            }
+        };
+
+        Object.keys(loginFields).forEach(fieldName => {
+            const field = loginFields[fieldName];
+            if (field.element) {
+                field.element.addEventListener('input', () => {
+                    validateLoginField(fieldName);
+                    updateLoginButton();
+                });
+
+                field.element.addEventListener('blur', () => {
+                    validateLoginField(fieldName);
+                    updateLoginButton();
+                });
+            }
+        });
+
+        function validateLoginField(fieldName) {
+            const field = loginFields[fieldName];
+            if (!field.element) return true;
+
+            const value = field.element.value.trim();
+            const error = field.validate(value);
+
+            if (error) {
+                field.element.classList.add('is-invalid');
+                field.element.classList.remove('is-valid');
+                if (field.feedback) {
+                    field.feedback.textContent = error;
+                    field.feedback.style.display = 'block';
+                }
+                return false;
+            } else {
+                field.element.classList.remove('is-invalid');
+                field.element.classList.add('is-valid');
+                if (field.feedback) {
+                    field.feedback.textContent = '';
+                    field.feedback.style.display = 'none';
+                }
+                return true;
+            }
         }
-    });
 
-    // Initial validation check
-    checkAllValidations();
-});
+        function updateLoginButton() {
+            if (!loginButton) return;
 
-// Keep the existing login validation code
-document.addEventListener("DOMContentLoaded", function () {
-    const emailField = document.getElementById("login-email");
-    const passwordField = document.getElementById("login-password");
-    const loginButton = document.getElementById("loginBtn");
-    const emailFeedback = document.querySelector(".emailFeeBackArea");
-    const passwordFeedback = document.querySelector(".passwordMessageArea");
-    const togglePasswordIcon = document.querySelector(".toggle-password");
+            const isValid = Object.keys(loginFields).every(fieldName => {
+                const field = loginFields[fieldName];
+                if (!field.element) return true;
+                const value = field.element.value.trim();
+                return !field.validate(value);
+            });
 
-    // Regular expressions for validation
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            loginButton.disabled = !isValid;
+        }
 
-    // Validation state
-    const validationState = {
-        email: false,
-        password: false,
-    };
-
-    // Enable or disable the login button based on validation state
-    const toggleLoginButton = () => {
-        const allValid = Object.values(validationState).every((isValid) => isValid);
+        // Initial state
         if (loginButton) {
-            loginButton.disabled = !allValid;
+            loginButton.disabled = true;
         }
-    };
-
-    // Validate email field
-    emailField?.addEventListener("input", () => {
-        const value = emailField.value.trim();
-        if (!emailPattern.test(value)) {
-            emailFeedback.textContent = "Please enter a valid email address";
-            emailFeedback.style.display = "block";
-            emailField.classList.add("is-invalid");
-            validationState.email = false;
-        } else {
-            emailFeedback.style.display = "none";
-            emailField.classList.remove("is-invalid");
-            emailField.classList.add("is-valid");
-            validationState.email = true;
-        }
-        toggleLoginButton();
-    });
-
-    // Validate password field
-    passwordField?.addEventListener("input", () => {
-        const value = passwordField.value.trim();
-        if (value.length === 0) {
-            passwordFeedback.textContent = "Password is required";
-            passwordFeedback.style.display = "block";
-            passwordField.classList.add("is-invalid");
-            validationState.password = false;
-        } else {
-            passwordFeedback.style.display = "none";
-            passwordField.classList.remove("is-invalid");
-            passwordField.classList.add("is-valid");
-            validationState.password = true;
-        }
-        toggleLoginButton();
-    });
-
-    // Initially disable login button if it exists
-    if (loginButton) {
-        loginButton.disabled = true;
     }
 });
