@@ -38,4 +38,18 @@ SWAGGER_SETTINGS = {
     },
     'USE_SESSION_AUTH': True,
     'SECURITY_REQUIREMENTS': [{'basic': []}],
-} 
+}
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'  # Or your email provider's SMTP server
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'  # Replace with your email
+EMAIL_HOST_PASSWORD = 'your-app-password'  # Replace with your app password
+
+# For development/testing, you can use the console backend instead
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Password Reset Settings
+PASSWORD_RESET_TIMEOUT = 14400  # 4 hours (in seconds) 
