@@ -1,162 +1,167 @@
-document.addEventListener("DOMContentLoaded", function () {
-    // Register form elements
-    const fullNameField = document.getElementById("fullNameField");
-    const emailField = document.getElementById("emailfield");
-    const passwordField = document.getElementById("passwordField");
-    const confirmPasswordField = document.getElementById("PasswordField2");
-    const registerButton = document.getElementById("registerBtn");
-    const togglePasswordIcons = document.querySelectorAll(".toggle-password");
-  
-    // Feedback areas
-    const fullNameFeedback = document.querySelector(".fullNameFeedbackArea");
-    const emailFeedback = document.querySelector(".emailFeeBackArea");
-    const passwordFeedback = document.querySelector(".passwordMessageArea");
-  
-    // Validation patterns
-    const namePattern = /^[a-zA-Z\s]{3,}$/;
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    const passwordPattern = /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  
-    // Validation state
-    const validationState = {
+document.addEventListener('DOMContentLoaded', function() {
+    // Get all form elements
+    const form = document.getElementById('registerForm');
+    const fullName = document.getElementById('fullNameField');
+    const email = document.getElementById('emailfield');
+    const password = document.getElementById('passwordField');
+    const confirmPassword = document.getElementById('PasswordField2');
+    const terms = document.getElementById('terms');
+    const registerBtn = document.getElementById('registerBtn');
+
+    // Validation state object
+    let validationState = {
         fullName: false,
         email: false,
         password: false,
-        confirmPassword: false
+        confirmPassword: false,
+        terms: false
     };
-  
-    // Enable or disable register button based on validation state
-    const toggleRegisterButton = () => {
-        const allValid = Object.values(validationState).every(isValid => isValid);
-        if (registerButton) {
-            registerButton.disabled = !allValid;
-        }
-    };
-  
-    // Validate Full Name
-    fullNameField?.addEventListener("input", () => {
-        const value = fullNameField.value.trim();
-        fullNameField.classList.add("is-invalid");
-        
-        if (value.length === 0) {
-            fullNameFeedback.textContent = "Full name is required";
-            validationState.fullName = false;
-        } else if (!namePattern.test(value)) {
-            fullNameFeedback.textContent = "Name must contain at least 3 letters (only letters and spaces allowed)";
-            validationState.fullName = false;
-        } else {
-            fullNameField.classList.remove("is-invalid");
-            fullNameField.classList.add("is-valid");
-            fullNameFeedback.style.display = "none";
-            validationState.fullName = true;
-        }
-        
-        fullNameFeedback.style.display = validationState.fullName ? "none" : "block";
-        toggleRegisterButton();
-    });
-  
-    // Validate Email
-    emailField?.addEventListener("input", () => {
-        const value = emailField.value.trim();
-        emailField.classList.add("is-invalid");
-        
-        if (value.length === 0) {
-            emailFeedback.textContent = "Email is required";
-            validationState.email = false;
-        } else if (!emailPattern.test(value)) {
-            emailFeedback.textContent = "Please enter a valid email address (e.g., user@example.com)";
-            validationState.email = false;
-        } else {
-            emailField.classList.remove("is-invalid");
-            emailField.classList.add("is-valid");
-            emailFeedback.style.display = "none";
-            validationState.email = true;
-        }
-        
-        emailFeedback.style.display = validationState.email ? "none" : "block";
-        toggleRegisterButton();
-    });
-  
-    // Validate Password
-    passwordField?.addEventListener("input", () => {
-        const value = passwordField.value.trim();
-        passwordField.classList.add("is-invalid");
-        
-        if (value.length === 0) {
-            passwordFeedback.textContent = "Password is required";
-            validationState.password = false;
-        } else if (!passwordPattern.test(value)) {
-            passwordFeedback.textContent = "Password must be at least 8 characters and include uppercase, lowercase, number, and special character";
-            validationState.password = false;
-        } else {
-            passwordField.classList.remove("is-invalid");
-            passwordField.classList.add("is-valid");
-            passwordFeedback.style.display = "none";
-            validationState.password = true;
-        }
-        
-        passwordFeedback.style.display = validationState.password ? "none" : "block";
-        
-        // Check confirm password when password changes
-        if (confirmPasswordField.value.trim()) {
-            validateConfirmPassword();
-        }
-        toggleRegisterButton();
-    });
-  
-    // Validate Confirm Password
-    const validateConfirmPassword = () => {
-        const passwordValue = passwordField.value.trim();
-        const confirmValue = confirmPasswordField.value.trim();
-        const confirmFeedback = confirmPasswordField.nextElementSibling.nextElementSibling;
-        
-        confirmPasswordField.classList.add("is-invalid");
 
-        if (confirmValue.length === 0) {
-            confirmFeedback.textContent = "Please confirm your password";
-            validationState.confirmPassword = false;
-        } else if (confirmValue !== passwordValue) {
-            confirmFeedback.textContent = "Passwords do not match";
-            validationState.confirmPassword = false;
+    // Disable button initially
+    registerBtn.disabled = true;
+
+    // Function to check if all validations pass
+    function checkAllValidations() {
+        const allValid = Object.values(validationState).every(value => value === true);
+        registerBtn.disabled = !allValid;
+        return allValid;
+    }
+
+    // Full Name Validation
+    fullName.addEventListener('input', function() {
+        const value = this.value.trim();
+        const nameRegex = /^[a-zA-Z\s]{3,}$/;
+        const isValid = nameRegex.test(value);
+
+        this.classList.remove('is-valid', 'is-invalid');
+        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+
+        const feedback = document.querySelector('.fullNameFeedbackArea');
+        if (!isValid) {
+            feedback.textContent = value.length < 3 ? 
+                'Name must be at least 3 characters long' : 
+                'Name can only contain letters and spaces';
+            feedback.style.display = 'block';
         } else {
-            confirmPasswordField.classList.remove("is-invalid");
-            confirmPasswordField.classList.add("is-valid");
-            confirmFeedback.style.display = "none";
-            validationState.confirmPassword = true;
+            feedback.style.display = 'none';
+        }
+
+        validationState.fullName = isValid;
+        checkAllValidations();
+    });
+
+    // Email Validation
+    email.addEventListener('input', function() {
+        const value = this.value.trim();
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        const isValid = emailRegex.test(value);
+
+        this.classList.remove('is-valid', 'is-invalid');
+        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+
+        const feedback = document.querySelector('.emailFeeBackArea');
+        if (!isValid) {
+            feedback.textContent = 'Please enter a valid email address';
+            feedback.style.display = 'block';
+        } else {
+            feedback.style.display = 'none';
+        }
+
+        validationState.email = isValid;
+        checkAllValidations();
+    });
+
+    // Password Validation
+    password.addEventListener('input', function() {
+        const value = this.value.trim();
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        const isValid = passwordRegex.test(value);
+
+        this.classList.remove('is-valid', 'is-invalid');
+        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+
+        const feedback = document.querySelector('.passwordMessageArea');
+        if (!isValid) {
+            feedback.textContent = 'Password must be at least 8 characters and include uppercase, lowercase, number, and special character';
+            feedback.style.display = 'block';
+        } else {
+            feedback.style.display = 'none';
+        }
+
+        validationState.password = isValid;
+        
+        // Revalidate confirm password if it has a value
+        if (confirmPassword.value.trim() !== '') {
+            confirmPassword.dispatchEvent(new Event('input'));
         }
         
-        confirmFeedback.style.display = validationState.confirmPassword ? "none" : "block";
-        toggleRegisterButton();
-    };
-  
-    confirmPasswordField?.addEventListener("input", validateConfirmPassword);
-  
-    // Toggle password visibility
-    togglePasswordIcons.forEach(icon => {
-        icon.addEventListener("click", () => {
-            const inputField = icon.closest('.password-group').querySelector('input');
-            if (inputField.type === "password") {
-                inputField.type = "text";
-                icon.classList.remove("fa-eye");
-                icon.classList.add("fa-eye-slash");
+        checkAllValidations();
+    });
+
+    // Confirm Password Validation
+    confirmPassword.addEventListener('input', function() {
+        const value = this.value.trim();
+        const isValid = value === password.value.trim() && value !== '';
+
+        this.classList.remove('is-valid', 'is-invalid');
+        this.classList.add(isValid ? 'is-valid' : 'is-invalid');
+
+        const feedback = this.nextElementSibling.nextElementSibling;
+        if (!isValid) {
+            feedback.textContent = value === '' ? 
+                'Please confirm your password' : 
+                'Passwords do not match';
+            feedback.style.display = 'block';
+        } else {
+            feedback.style.display = 'none';
+        }
+
+        validationState.confirmPassword = isValid;
+        checkAllValidations();
+    });
+
+    // Terms Checkbox Validation
+    terms.addEventListener('change', function() {
+        validationState.terms = this.checked;
+        checkAllValidations();
+    });
+
+    // Password Visibility Toggle
+    document.querySelectorAll('.password-toggle').forEach(toggle => {
+        toggle.addEventListener('click', function() {
+            const input = this.previousElementSibling;
+            const icon = this.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
             } else {
-                inputField.type = "password";
-                icon.classList.remove("fa-eye-slash");
-                icon.classList.add("fa-eye");
+                input.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
         });
     });
-  
-    // Initially disable register button and trigger validation for any pre-filled fields
-    if (registerButton) {
-        registerButton.disabled = true;
-    }
 
-    // Initial validation for pre-filled fields
-    if (fullNameField?.value) fullNameField.dispatchEvent(new Event('input'));
-    if (emailField?.value) emailField.dispatchEvent(new Event('input'));
-    if (passwordField?.value) passwordField.dispatchEvent(new Event('input'));
-    if (confirmPasswordField?.value) confirmPasswordField.dispatchEvent(new Event('input'));
+    // Form Submission
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Trigger validation on all fields
+        fullName.dispatchEvent(new Event('input'));
+        email.dispatchEvent(new Event('input'));
+        password.dispatchEvent(new Event('input'));
+        confirmPassword.dispatchEvent(new Event('input'));
+
+        // Only submit if all validations pass
+        if (checkAllValidations()) {
+            this.submit();
+        }
+    });
+
+    // Initial validation check
+    checkAllValidations();
 });
 
 // Keep the existing login validation code
